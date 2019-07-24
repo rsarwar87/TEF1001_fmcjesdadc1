@@ -1,0 +1,1 @@
+set_false_path -from [get_pins msys_i/pcie/xdma_0/inst/msys_xdma_0_0_pcie2_to_pcie3_wrapper_i/pcie2_ip_i/U0/inst/user_lnk_up_int_reg/C] -to [get_pins {msys_i/vio/vio_0/inst/PROBE_IN_INST/probe_in_reg_reg[131]/D}]

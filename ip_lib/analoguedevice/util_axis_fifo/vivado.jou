@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Vivado v2018.3 (64-bit)
+# SW Build 2405991 on Thu Dec  6 23:36:41 MST 2018
+# IP Build 2404404 on Fri Dec  7 01:43:56 MST 2018
+# Start of session at: Sat Jul 20 19:53:06 2019
+# Process ID: 59442
+# Current directory: /media/2TB/workspace/rsarwar/work/fmcjeds-adc/kc705/refdesign/source/ip_library/util_axis_fifo
+# Command line: vivado -mode batch -source util_axis_fifo_ip.tcl
+# Log file: /media/2TB/workspace/rsarwar/work/fmcjeds-adc/kc705/refdesign/source/ip_library/util_axis_fifo/vivado.log
+# Journal file: /media/2TB/workspace/rsarwar/work/fmcjeds-adc/kc705/refdesign/source/ip_library/util_axis_fifo/vivado.jou
+#-----------------------------------------------------------
+source util_axis_fifo_ip.tcl
