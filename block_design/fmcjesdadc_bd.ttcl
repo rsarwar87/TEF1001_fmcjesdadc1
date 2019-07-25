@@ -3,7 +3,12 @@ set bCheckIPsPassed 1
 ##################################################################
 # CHECK IPs
 ##################################################################
+import_files -norecurse ../block_design/system_top.v
+set_property top system_top [current_fileset]
 import_files -norecurse ../block_design/fmcjesdadc1_spi.v
+import_files -norecurse ../ip_lib/analoguedevice/common/ad_sysref_gen.v 
+#import_files -norecurse ../ip_lib/analoguedevice/xilinx/common/ad_iobuf.v 
+
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
    set list_check_ips "\ 
@@ -47,92 +52,6 @@ if { $bCheckIPsPassed != 1 } {
 # DESIGN PROCs
 ##################################################################
 
-proc create_hier_cell_fmc_spi { parentCell nameHier } {
-
-  variable script_folder
-
-  if { $parentCell eq "" || $nameHier eq "" } {
-     catch {common::send_msg_id "BD_TCL-102" "ERROR" "create_hier_cell_fmc_spi() - Empty argument(s)!"}
-     return
-  }
-
-  # Get object for parentCell
-  set parentObj [get_bd_cells $parentCell]
-  if { $parentObj == "" } {
-     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
-     return
-  }
-
-  # Make sure parentObj is hier blk
-  set parentType [get_property TYPE $parentObj]
-  if { $parentType ne "hier" } {
-     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
-     return
-  }
-
-  # Save current instance; Restore later
-  set oldCurInst [current_bd_instance .]
-
-  # Set parent object as current
-  current_bd_instance $parentObj
-
-  # Create cell and set as current instance
-  set hier_obj [create_bd_cell -type hier $nameHier]
-  current_bd_instance $hier_obj
-
-  # Create interface pins
-  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 AXI_LITE
-
-
-  # Create pins
-  create_bd_pin -dir O -type intr ip2intc_irpt
-  create_bd_pin -dir I -type clk s_axi_aclk
-  create_bd_pin -dir I -type rst s_axi_aresetn
-  create_bd_pin -dir O spi_clk
-  create_bd_pin -dir O -from 0 -to 0 spi_csn_0
-  create_bd_pin -dir IO spi_sdio
-
-  # Create instance: axi_spi, and set properties
-  set axi_spi [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_quad_spi:3.2 axi_spi ]
-  set_property -dict [ list \
-   CONFIG.C_NUM_SS_BITS {8} \
-   CONFIG.C_SCK_RATIO {8} \
-   CONFIG.C_USE_STARTUP {0} \
- ] $axi_spi
-
-  # Create instance: fmcjesdadc1_spi_0, and set properties
-  set block_name fmcjesdadc1_spi
-  set block_cell_name fmcjesdadc1_spi_0
-  if { [catch {set fmcjesdadc1_spi_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
-     catch {common::send_msg_id "BD_TCL-105" "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   } elseif { $fmcjesdadc1_spi_0 eq "" } {
-     catch {common::send_msg_id "BD_TCL-106" "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
-     return 1
-   }
-  
-  # Create instance: xlslice_0, and set properties
-  set xlslice_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 xlslice_0 ]
-  set_property -dict [ list \
-   CONFIG.DIN_FROM {0} \
-   CONFIG.DIN_TO {0} \
-   CONFIG.DIN_WIDTH {8} \
- ] $xlslice_0
-
-  # Create port connections
-  connect_bd_net -net Net [get_bd_pins spi_clk] [get_bd_pins axi_spi/sck_i] [get_bd_pins axi_spi/sck_o] [get_bd_pins fmcjesdadc1_spi_0/spi_clk]
-  connect_bd_net -net Net1 [get_bd_pins axi_spi/ss_i] [get_bd_pins axi_spi/ss_o] [get_bd_pins xlslice_0/Din]
-  connect_bd_net -net Net2 [get_bd_pins spi_sdio] [get_bd_pins fmcjesdadc1_spi_0/spi_sdio]
-  connect_bd_net -net axi_spi_io0_o [get_bd_pins axi_spi/io0_i] [get_bd_pins axi_spi/io0_o] [get_bd_pins fmcjesdadc1_spi_0/spi_mosi]
-  connect_bd_net -net axi_spi_ip2intc_irpt [get_bd_pins ip2intc_irpt] [get_bd_pins axi_spi/ip2intc_irpt]
-  connect_bd_net -net fmcjesdadc1_spi_0_spi_miso [get_bd_pins axi_spi/io1_i] [get_bd_pins fmcjesdadc1_spi_0/spi_miso]
-  connect_bd_net -net microblaze_0_Clk [get_bd_pins s_axi_aclk] [get_bd_pins axi_spi/ext_spi_clk] [get_bd_pins axi_spi/s_axi_aclk]
-  connect_bd_net -net rst_clk_wiz_0_50M_peripheral_aresetn [get_bd_pins s_axi_aresetn] [get_bd_pins axi_spi/s_axi_aresetn]
-  connect_bd_net -net xlslice_0_Dout [get_bd_pins spi_csn_0] [get_bd_pins fmcjesdadc1_spi_0/spi_csn] [get_bd_pins xlslice_0/Dout]
-
-  # Restore current instance
-  current_bd_instance $oldCurInst
-}
 
 # Hierarchical cell: axi_ad9250_jesd
 proc create_hier_cell_axi_ad9250_jesd { parentCell nameHier } {
@@ -243,7 +162,7 @@ proc create_root_design { parentCell } {
 
   variable script_folder
   variable design_name
-
+  set_property -dict [list CONFIG.NUM_PORTS {8}] [get_bd_cells sys_mb/microblaze_0_xlconcat]
   if { $parentCell eq "" } {
      set parentCell [get_bd_cells /]
   }
@@ -272,7 +191,14 @@ proc create_root_design { parentCell } {
   # Create interface ports
 
   # Create ports
-# set rx_core_clk [ create_bd_port -dir O rx_core_clk ]
+  set spi_clk_i [ create_bd_port -dir I spi_clk_i ]
+  set spi_clk_o [ create_bd_port -dir O spi_clk_o ]
+  set spi_csn_i [ create_bd_port -dir I -from 7 -to 0 spi_csn_i ]
+  set spi_csn_o [ create_bd_port -dir O -from 7 -to 0 spi_csn_o ]
+  set spi_sdi_i [ create_bd_port -dir I spi_sdi_i ]
+  set spi_sdo_i [ create_bd_port -dir I spi_sdo_i ]
+  set spi_sdo_o [ create_bd_port -dir O spi_sdo_o ]
+  set rx_core_clk [ create_bd_port -dir O rx_core_clk ]
   set rx_data_0_n [ create_bd_port -dir I rx_data_0_n ]
   set rx_data_0_p [ create_bd_port -dir I rx_data_0_p ]
   set rx_data_1_n [ create_bd_port -dir I rx_data_1_n ]
@@ -284,16 +210,6 @@ proc create_root_design { parentCell } {
   set rx_ref_clk_0 [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 rx_ref_clk]
   set rx_sync [ create_bd_port -dir O -from 0 -to 0 rx_sync ]
   set rx_sysref [ create_bd_port -dir I rx_sysref ]
-  set spi_clk [ create_bd_port -dir O spi_clk ]
-  set spi_csn_0 [ create_bd_port -dir O spi_csn_0 ]
-  set spi_sdio [ create_bd_port -dir IO spi_sdio ]
-
-  # Create instance: GND_1, and set properties
-  set GND_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 GND_1 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0} \
-   CONFIG.CONST_WIDTH {1} \
- ] $GND_1
 
   # Create instance: axi_ad9250_0_core, and set properties
   set axi_ad9250_0_core [ create_bd_cell -type ip -vlnv analog.com:user:axi_ad9250:1.0 axi_ad9250_0_core ]
@@ -311,7 +227,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.AXI_SLICE_DEST {false} \
    CONFIG.AXI_SLICE_SRC {false} \
-   CONFIG.CYCLIC {false} \
+   CONFIG.CYCLIC {true} \
    CONFIG.DMA_2D_TRANSFER {false} \
    CONFIG.DMA_DATA_WIDTH_DEST {512} \
    CONFIG.DMA_DATA_WIDTH_SRC {64} \
@@ -339,7 +255,7 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.AXI_SLICE_DEST {false} \
    CONFIG.AXI_SLICE_SRC {false} \
-   CONFIG.CYCLIC {false} \
+   CONFIG.CYCLIC {true} \
    CONFIG.DMA_2D_TRANSFER {false} \
    CONFIG.DMA_DATA_WIDTH_DEST {512} \
    CONFIG.DMA_DATA_WIDTH_SRC {64} \
@@ -353,7 +269,6 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_ad9250_jesd
   create_hier_cell_axi_ad9250_jesd [current_bd_instance .] axi_ad9250_jesd
-
   # Create instance: axi_ad9250_jesd_rstgen, and set properties
   set axi_ad9250_jesd_rstgen [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 axi_ad9250_jesd_rstgen ]
 
@@ -368,8 +283,6 @@ proc create_root_design { parentCell } {
    CONFIG.TX_OR_RX_N {0} \
  ] $axi_ad9250_xcvr
 
-  # Create instance: axi_spi, and set properties
-  create_hier_cell_fmc_spi [current_bd_instance .] fmc_spi
 
   # Create instance: data_bsplit, and set properties
   set data_bsplit [ create_bd_cell -type ip -vlnv analog.com:user:util_bsplit:1.0 data_bsplit ]
@@ -378,11 +291,6 @@ proc create_root_design { parentCell } {
    CONFIG.NUM_OF_CHANNELS {2} \
  ] $data_bsplit
 
-  # Create instance: sys_concat_intc, and set properties
-  set sys_concat_intc [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 sys_concat_intc ]
-  set_property -dict [ list \
-   CONFIG.NUM_PORTS {16} \
- ] $sys_concat_intc
 
   # Create instance: util_fmcjesdadc1_xcvr, and set properties
   set util_fmcjesdadc1_xcvr [ create_bd_cell -type ip -vlnv analog.com:user:util_adxcvr:1.0 util_fmcjesdadc1_xcvr ]
@@ -399,6 +307,14 @@ proc create_root_design { parentCell } {
    CONFIG.TX_NUM_OF_LANES {0} \
    CONFIG.TX_OUT_DIV {1} \
  ] $util_fmcjesdadc1_xcvr
+
+  # Create instance: axi_spi, and set properties
+  set axi_spi [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_quad_spi:3.2 axi_spi ]
+  set_property -dict [ list \
+   CONFIG.C_NUM_SS_BITS {8} \
+   CONFIG.C_SCK_RATIO {8} \
+   CONFIG.C_USE_STARTUP {0} \
+ ] $axi_spi
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_ad9250_0_cpack_packed_fifo_wr [get_bd_intf_pins axi_ad9250_0_cpack/packed_fifo_wr] [get_bd_intf_pins axi_ad9250_0_dma/fifo_wr]
@@ -417,7 +333,6 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net util_fmcjesdadc1_xcvr_rx_3 [get_bd_intf_pins axi_ad9250_jesd/rx_phy3] [get_bd_intf_pins util_fmcjesdadc1_xcvr/rx_3]
 
   # Create port connections
-  connect_bd_net -net GND_1_dout [get_bd_pins GND_1/dout] [get_bd_pins sys_concat_intc/In0] [get_bd_pins sys_concat_intc/In1] [get_bd_pins sys_concat_intc/In2] [get_bd_pins sys_concat_intc/In3] [get_bd_pins sys_concat_intc/In4] [get_bd_pins sys_concat_intc/In5] [get_bd_pins sys_concat_intc/In6] [get_bd_pins sys_concat_intc/In7] [get_bd_pins sys_concat_intc/In8] [get_bd_pins sys_concat_intc/In9] [get_bd_pins sys_concat_intc/In11] [get_bd_pins sys_concat_intc/In15]
   connect_bd_net -net axi_ad9250_0_core_adc_clk [get_bd_pins axi_ad9250_0_core/adc_clk] [get_bd_pins axi_ad9250_0_dma/fifo_wr_clk]
   connect_bd_net -net axi_ad9250_0_core_adc_data_a [get_bd_pins axi_ad9250_0_core/adc_data_a] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_data_0]
   connect_bd_net -net axi_ad9250_0_core_adc_data_b [get_bd_pins axi_ad9250_0_core/adc_data_b] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_data_1]
@@ -425,7 +340,7 @@ proc create_root_design { parentCell } {
   connect_bd_net -net axi_ad9250_0_core_adc_enable_b [get_bd_pins axi_ad9250_0_core/adc_enable_b] [get_bd_pins axi_ad9250_0_cpack/enable_1]
   connect_bd_net -net axi_ad9250_0_core_adc_valid_a [get_bd_pins axi_ad9250_0_core/adc_valid_a] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_en]
   connect_bd_net -net axi_ad9250_0_cpack_fifo_wr_overflow [get_bd_pins axi_ad9250_0_core/adc_dovf] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_overflow]
-  connect_bd_net -net axi_ad9250_0_dma_irq [get_bd_pins axi_ad9250_0_dma/irq] [get_bd_pins sys_concat_intc/In13]
+  connect_bd_net [get_bd_pins axi_ad9250_0_dma/irq] [get_bd_pins sys_mb/microblaze_0_xlconcat/In4]
   connect_bd_net -net axi_ad9250_1_core_adc_clk [get_bd_pins axi_ad9250_1_core/adc_clk] [get_bd_pins axi_ad9250_1_dma/fifo_wr_clk]
   connect_bd_net -net axi_ad9250_1_core_adc_data_a [get_bd_pins axi_ad9250_1_core/adc_data_a] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_data_0]
   connect_bd_net -net axi_ad9250_1_core_adc_data_b [get_bd_pins axi_ad9250_1_core/adc_data_b] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_data_1]
@@ -433,8 +348,8 @@ proc create_root_design { parentCell } {
   connect_bd_net -net axi_ad9250_1_core_adc_enable_b [get_bd_pins axi_ad9250_1_core/adc_enable_b] [get_bd_pins axi_ad9250_1_cpack/enable_1]
   connect_bd_net -net axi_ad9250_1_core_adc_valid_a [get_bd_pins axi_ad9250_1_core/adc_valid_a] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_en]
   connect_bd_net -net axi_ad9250_1_cpack_fifo_wr_overflow [get_bd_pins axi_ad9250_1_core/adc_dovf] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_overflow]
-  connect_bd_net -net axi_ad9250_1_dma_irq [get_bd_pins axi_ad9250_1_dma/irq] [get_bd_pins sys_concat_intc/In12]
-  connect_bd_net -net axi_ad9250_jesd_irq [get_bd_pins axi_ad9250_jesd/irq] [get_bd_pins sys_concat_intc/In14]
+  connect_bd_net [get_bd_pins axi_ad9250_1_dma/irq] [get_bd_pins sys_mb/microblaze_0_xlconcat/In5]
+  connect_bd_net [get_bd_pins axi_ad9250_jesd/irq] [get_bd_pins sys_mb/microblaze_0_xlconcat/In6]
   connect_bd_net -net axi_ad9250_jesd_phy_en_char_align [get_bd_pins axi_ad9250_jesd/phy_en_char_align] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_0] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_1] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_2] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_3]
   connect_bd_net -net axi_ad9250_jesd_rstgen_peripheral_reset [get_bd_pins axi_ad9250_0_cpack/reset] [get_bd_pins axi_ad9250_1_cpack/reset] [get_bd_pins axi_ad9250_jesd_rstgen/peripheral_reset]
   connect_bd_net -net axi_ad9250_jesd_rx_data_tdata [get_bd_pins axi_ad9250_jesd/rx_data_tdata] [get_bd_pins data_bsplit/data]
@@ -462,7 +377,15 @@ proc create_root_design { parentCell } {
   connect_bd_net -net sys_cpu_resetn [get_bd_pins axi_ad9250_0_core/s_axi_aresetn] [get_bd_pins axi_ad9250_0_dma/s_axi_aresetn] [get_bd_pins axi_ad9250_1_core/s_axi_aresetn] [get_bd_pins axi_ad9250_1_dma/s_axi_aresetn] [get_bd_pins axi_ad9250_jesd/s_axi_aresetn] [get_bd_pins axi_ad9250_jesd_rstgen/ext_reset_in] [get_bd_pins axi_ad9250_xcvr/s_axi_aresetn]  [get_bd_pins util_fmcjesdadc1_xcvr/up_rstn]
   connect_bd_net -net sysref_1 [get_bd_ports rx_sysref] [get_bd_pins axi_ad9250_jesd/sysref]
   connect_bd_net -net util_fmcjesdadc1_xcvr_rx_out_clk_0 [get_bd_pins axi_ad9250_0_core/rx_clk] [get_bd_pins axi_ad9250_0_cpack/clk] [get_bd_pins axi_ad9250_1_core/rx_clk] [get_bd_pins axi_ad9250_1_cpack/clk] [get_bd_pins axi_ad9250_jesd/device_clk] [get_bd_pins axi_ad9250_jesd_rstgen/slowest_sync_clk] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_0] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_1] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_2] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_3] [get_bd_pins util_fmcjesdadc1_xcvr/rx_out_clk_0]
-
+  connect_bd_net -net axi_spi_io0_o [get_bd_ports spi_sdo_o] [get_bd_pins axi_spi/io0_o]
+  connect_bd_net [get_bd_pins axi_spi/ip2intc_irpt] [get_bd_pins sys_mb/microblaze_0_xlconcat/In7]
+  connect_bd_net -net axi_spi_sck_o [get_bd_ports spi_clk_o] [get_bd_pins axi_spi/sck_o]
+  connect_bd_net -net axi_spi_ss_o [get_bd_ports spi_csn_o] [get_bd_pins axi_spi/ss_o]
+  connect_bd_net -net spi_clk_i_1 [get_bd_ports spi_clk_i] [get_bd_pins axi_spi/sck_i]
+  connect_bd_net -net spi_csn_i_1 [get_bd_ports spi_csn_i] [get_bd_pins axi_spi/ss_i]
+  connect_bd_net -net spi_sdi_i_1 [get_bd_ports spi_sdi_i] [get_bd_pins axi_spi/io1_i]
+  connect_bd_net -net spi_sdo_i_1 [get_bd_ports spi_sdo_i] [get_bd_pins axi_spi/io0_i]
+  connect_bd_net [get_bd_pins axi_spi/ext_spi_clk] [get_bd_pins ddr/S00_ACLK]
   # Create address segments
 
 
@@ -483,7 +406,7 @@ create_root_design ""
 
 common::send_msg_id "BD_TCL-1000" "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 
-
+connect_bd_net [get_bd_pins /util_fmcjesdadc1_xcvr/rx_out_clk_0] [get_bd_ports rx_core_clk]
 startgroup
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_0_core/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_0_core/s_axi]
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_0_dma/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_0_dma/s_axi]
@@ -491,13 +414,10 @@ apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_1_dma/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_1_dma/s_axi]
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_jesd/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_jesd/s_axi]
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_xcvr/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_xcvr/s_axi]
-apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {fmc_spi/axi_spi/AXI_LITE} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins fmc_spi/axi_spi/AXI_LITE]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {axi_spi/AXI_LITE} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_spi/AXI_LITE]
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_clk (200 MHz)} Clk_slave {/ddr/mig_7series_0/ui_clk (200 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_clk (200 MHz)} Master {/axi_ad9250_0_dma/m_dest_axi} Slave {/ddr/mig_7series_0/S_AXI} intc_ip {/ddr/axi_interconnect_ddr} master_apm {0}}  [get_bd_intf_pins axi_ad9250_0_dma/m_dest_axi]
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_clk (200 MHz)} Clk_slave {/ddr/mig_7series_0/ui_clk (200 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_clk (200 MHz)} Master {/axi_ad9250_1_dma/m_dest_axi} Slave {/ddr/mig_7series_0/S_AXI} intc_ip {/ddr/axi_interconnect_ddr} master_apm {0}}  [get_bd_intf_pins axi_ad9250_1_dma/m_dest_axi]
 endgroup
-connect_bd_net [get_bd_ports spi_clk] [get_bd_pins fmc_spi/spi_clk]
-connect_bd_net [get_bd_ports spi_csn_0] [get_bd_pins fmc_spi/spi_csn_0]
-connect_bd_net [get_bd_ports spi_sdio] [get_bd_pins fmc_spi/spi_sdio]
-connect_bd_net [get_bd_pins fmc_spi/ip2intc_irpt] [get_bd_pins sys_concat_intc/In10]
 apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {/ddr/mig_7series_0/ui_clk (200 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_clk (200 MHz)} Master {/axi_ad9250_xcvr/m_axi} Slave {/ddr/mig_7series_0/S_AXI} intc_ip {/ddr/axi_interconnect_ddr} master_apm {0}}  [get_bd_intf_pins axi_ad9250_xcvr/m_axi]
+set_property -dict [list CONFIG.C_BUF_TYPE {IBUFDSGTE}] [get_bd_cells util_ds_buf_0]
 

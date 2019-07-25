@@ -876,4 +876,4 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
-
+set_property target_language Verilog [current_project]

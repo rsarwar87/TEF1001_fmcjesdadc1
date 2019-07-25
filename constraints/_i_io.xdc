@@ -2,33 +2,51 @@
 # FMC Card
 #----------
 
-set_property -dict {PACKAGE_PIN D6} [get_ports rx_ref_clk_clk_p[0]]
-set_property -dict {PACKAGE_PIN D5} [get_ports rx_ref_clk_clk_n[0]]
+#set_property PACKAGE_PIN {} [get_ports {CLK_PCIe_100MHz_clk_p[0]}]
+#set_property PACKAGE_PIN {} [get_ports {CLK_PCIe_100MHz_clk_n[0]}]
+set_property PACKAGE_PIN D6 [get_ports rx_ref_clk_p]
+set_property PACKAGE_PIN D5 [get_ports rx_ref_clk_n]
 
 ## Clear out the GTX; otherwise you cannot assign the RX GTX
-set_property PACKAGE_PIN {} [get_ports {rx_data_0_p}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_0_n}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_1_p}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_1_n}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_2_p}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_2_n}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_3_p}]
-set_property PACKAGE_PIN {} [get_ports {rx_data_3_n}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_p[0]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_n[0]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_p[1]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_n[1]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_p[2]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_n[2]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_p[3]}]
+#set_property PACKAGE_PIN {} [get_ports {rx_data_n[3]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[3]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[3]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[3]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[3]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[2]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[2]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[2]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[2]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[1]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[1]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[1]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[1]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[0]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[0]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[0]}]
+#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[0]}]
 # Assign RX GTX
-set_property -dict {PACKAGE_PIN B6} [get_ports {rx_data_0_p}]
-set_property -dict {PACKAGE_PIN B5} [get_ports {rx_data_0_n}]
-set_property -dict {PACKAGE_PIN C4} [get_ports {rx_data_1_p}]
-set_property -dict {PACKAGE_PIN C3} [get_ports {rx_data_1_n}]
-set_property -dict {PACKAGE_PIN E4} [get_ports {rx_data_2_p}]
-set_property -dict {PACKAGE_PIN E3} [get_ports {rx_data_2_n}]
-set_property -dict {PACKAGE_PIN G4} [get_ports {rx_data_3_p}]
-set_property -dict {PACKAGE_PIN G3} [get_ports {rx_data_3_n}]
+set_property -dict {PACKAGE_PIN B6} [get_ports {rx_data_p[0]}]
+set_property -dict {PACKAGE_PIN B5} [get_ports {rx_data_n[0]}]
+set_property -dict {PACKAGE_PIN C4} [get_ports {rx_data_p[1]}]
+set_property -dict {PACKAGE_PIN C3} [get_ports {rx_data_n[1]}]
+set_property -dict {PACKAGE_PIN E4} [get_ports {rx_data_p[2]}]
+set_property -dict {PACKAGE_PIN E3} [get_ports {rx_data_n[2]}]
+set_property -dict {PACKAGE_PIN G4} [get_ports {rx_data_p[3]}]
+set_property -dict {PACKAGE_PIN G3} [get_ports {rx_data_n[3]}]
 
-set_property  -dict {PACKAGE_PIN  J16   IOSTANDARD LVCMOS18} [get_ports spi_csn_0[0]]                      ; ## G34  FMC_HPC_LA31_N
+set_property  -dict {PACKAGE_PIN  J16   IOSTANDARD LVCMOS18} [get_ports spi_csn_0]                      ; ## G34  FMC_HPC_LA31_N
 set_property  -dict {PACKAGE_PIN  J15   IOSTANDARD LVCMOS18} [get_ports spi_clk]                      ; ## G33  FMC_HPC_LA31_P
 set_property  -dict {PACKAGE_PIN  L17   IOSTANDARD LVCMOS18} [get_ports spi_sdio]                     ; ## H37  FMC_HPC_LA32_P
 
-set_property  -dict {PACKAGE_PIN  M17   IOSTANDARD LVCMOS18} [get_ports rx_sync[0]]                      ; ## G36  FMC_HPC_LA33_P
+set_property  -dict {PACKAGE_PIN  M17   IOSTANDARD LVCMOS18} [get_ports rx_sync]                      ; ## G36  FMC_HPC_LA33_P
 set_property  -dict {PACKAGE_PIN  L18   IOSTANDARD LVCMOS18} [get_ports rx_sysref]                    ; ## G37  FMC_HPC_LA33_N
 
 
