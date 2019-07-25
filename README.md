@@ -1,4 +1,4 @@
-# TEF1001_refdesign: only 1-160-1
+# TEF1001 golden reference design for AD FMCJESDADV1: only 1-160-1
 Project Description
 ==========================================================================
 
@@ -18,12 +18,11 @@ Implementation to operate FMCJEDSADC1 board (with 4 250MHz ADCs) to operate in T
 2. Run:
 
     vivado_create_project_guimode.sh
-
     vivado_open_project_guimode.sh
 
 3. Build system: Create HDF and export to prebuilt folder. Run on Vivado TCL: 
 
-    TE::hw_build_design -export_prebuilt
+     TE::hw_build_design -export_prebuilt
 
 Note: Script generate design and export files into \prebuilt\hardware\<short dir>. Use GUI is the same, except file export to prebuilt folder
 
