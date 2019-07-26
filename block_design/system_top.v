@@ -99,7 +99,7 @@ module system_top (
   wire    [ 7:0]  spi_csn;
   wire            spi_mosi;
   wire            spi_miso;
-  
+  wire     [31:0] gpio; 
   
   wire            rx_ref_clk;
   wire            rx_clk;
@@ -116,7 +116,7 @@ module system_top (
 
   ad_sysref_gen #(.SYSREF_PERIOD(64)) i_sysref (
     .core_clk (rx_clk),
-    .sysref_en (1'b1), //TODO: WHAT IS THIS??
+    .sysref_en (gpio[0]), //TODO: WHAT IS THIS??
     .sysref_out (rx_sysref));
 
   // instantiations
@@ -181,6 +181,8 @@ module system_top (
     .spi_rtl_io2_io(spi_rtl_io2_io),
     .spi_rtl_io3_io(spi_rtl_io3_io),
     .spi_rtl_ss_io(spi_rtl_ss_io),
+
+    .gpio_o(gpio),
     
     .spi_clk_i (spi_clk),
     .spi_clk_o (spi_clk),

@@ -876,4 +876,8 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
-set_property target_language Verilog [current_project]
+
+set_param messaging.defaultLimit 2000
+set_property STEPS.POWER_OPT_DESIGN.IS_ENABLED true [get_run impl_1]
+set_property STEPS.Post_PLACE_POWER_OPT_DESIGN.IS_ENABLED true [get_run impl_1]
+source ../block_design/adi_xilinx_msg.ttcl

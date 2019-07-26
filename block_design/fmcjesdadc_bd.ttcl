@@ -430,9 +430,26 @@ set_property -dict [list CONFIG.C_BUF_TYPE {IBUFDSGTE}] [get_bd_cells util_ds_bu
 #set_property range 1G [get_bd_addr_segs {sys_mb/microblaze_0/Instruction/SEG_mig_7series_0_memaddr}]
 #set_property offset 0xC0000000 [get_bd_addr_segs {sys_mb/microblaze_0/Instruction/SEG_mig_7series_0_memaddr}]
 #set_property range 1G [get_bd_addr_segs {sys_mb/microblaze_0/Data/SEG_mig_7series_0_memaddr}]
+set_property offset 0x0000000000000000 [get_bd_addr_segs {pcie/xdma_0/M_AXI/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {pcie/xdma_0/M_AXI/SEG_mig_7series_0_memaddr}]
+set_property offset 0x00000000 [get_bd_addr_segs {axi_ad9250_0_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property offset 0x00000000 [get_bd_addr_segs {axi_ad9250_1_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {axi_ad9250_0_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {axi_ad9250_1_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property offset 0x00000000 [get_bd_addr_segs {axi_ad9250_xcvr/m_axi/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {axi_ad9250_xcvr/m_axi/SEG_mig_7series_0_memaddr}]
 
 
 set_property offset 0x7C420000 [get_bd_addr_segs {pcie/xdma_0/M_AXI_LITE/SEG_axi_ad9250_0_dma_axi_lite}]
 set_property offset 0x7C430000 [get_bd_addr_segs {pcie/xdma_0/M_AXI_LITE/SEG_axi_ad9250_1_dma_axi_lite}]
 set_property offset 0x7C420000 [get_bd_addr_segs {sys_mb/microblaze_0/Data/SEG_axi_ad9250_0_dma_axi_lite}]
 set_property offset 0x7C430000 [get_bd_addr_segs {sys_mb/microblaze_0/Data/SEG_axi_ad9250_1_dma_axi_lite}]
+
+create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_gpio_0/S_AXI} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_gpio/S_AXI]
+create_bd_port -dir O -from 31 -to 0 gpio_o
+connect_bd_net [get_bd_pins /axi_gpio/gpio_io_o] [get_bd_ports gpio_o]
+set_property offset 0x42000000 [get_bd_addr_segs {pcie/xdma_0/M_AXI_LITE/SEG_axi_gpio_0_Reg}]
+set_property offset 0x42000000 [get_bd_addr_segs {sys_mb/microblaze_0/Data/SEG_axi_gpio_0_Reg}]
+
+
