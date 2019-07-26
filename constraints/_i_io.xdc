@@ -8,30 +8,30 @@ set_property PACKAGE_PIN D6 [get_ports rx_ref_clk_p]
 set_property PACKAGE_PIN D5 [get_ports rx_ref_clk_n]
 
 ## Clear out the GTX; otherwise you cannot assign the RX GTX
-#set_property PACKAGE_PIN {} [get_ports {rx_data_p[0]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_n[0]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_p[1]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_n[1]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_p[2]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_n[2]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_p[3]}]
-#set_property PACKAGE_PIN {} [get_ports {rx_data_n[3]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[3]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[3]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[3]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[3]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[2]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[2]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[2]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[2]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[1]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[1]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[1]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[1]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[0]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[0]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[0]}]
-#set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[0]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_p[0]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_n[0]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_p[1]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_n[1]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_p[2]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_n[2]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_p[3]}]
+set_property PACKAGE_PIN {} [get_ports {rx_data_n[3]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[3]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[3]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[3]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[3]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[2]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[2]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[2]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[2]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[1]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[1]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[1]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[1]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxn[0]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_rxp[0]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txn[0]}]
+set_property PACKAGE_PIN {} [get_ports {pcie_7x_mgt_txp[0]}]
 # Assign RX GTX
 set_property -dict {PACKAGE_PIN B6} [get_ports {rx_data_p[0]}]
 set_property -dict {PACKAGE_PIN B5} [get_ports {rx_data_n[0]}]
@@ -50,10 +50,10 @@ set_property  -dict {PACKAGE_PIN  M17   IOSTANDARD LVCMOS18} [get_ports rx_sync]
 set_property  -dict {PACKAGE_PIN  L18   IOSTANDARD LVCMOS18} [get_ports rx_sysref]                    ; ## G37  FMC_HPC_LA33_N
 
 
-#USER LED Matrix
+#USR LED Matrix
 #
 
-#USER LEDS CONNECTED TO A FMC_ADJ VCCO BANK (default config 1.8V)
+#USR LEDS CONNECTED TO A FMC_ADJ VCCO BANK (default config 1.8V)
 set_property PACKAGE_PIN K25 [get_ports {USR_LED[0]}]
 set_property PACKAGE_PIN K26 [get_ports {USR_LED[1]}]
 set_property PACKAGE_PIN P26 [get_ports {USR_LED[2]}]
@@ -65,7 +65,7 @@ set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[2]}]
 set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[3]}]
 set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[4]}]
 
-#USER LEDS CONNECTED TO A 1.8V VCCO BANK
+#USR LEDS CONNECTED TO A 1.8V VCCO BANK
 set_property PACKAGE_PIN J26 [get_ports {USR_LED[5]}]
 set_property PACKAGE_PIN H26 [get_ports {USR_LED[6]}]
 set_property PACKAGE_PIN E26 [get_ports {USR_LED[7]}]
@@ -75,13 +75,13 @@ set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[6]}]
 set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[7]}]
 set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[8]}]
 
-#USER LED CONNECTED TO A FMC_ADJ VCCO BANK (default config 1.8V)
+#USR LED CONNECTED TO A FMC_ADJ VCCO BANK (default config 1.8V)
 set_property PACKAGE_PIN F19 [get_ports {USR_LED[9]}]
 set_property IOSTANDARD LVCMOS18 [get_ports {USR_LED[9]}]
 
 
 #----------
-#USER LED over CPLD
+#USR LED over CPLD
 # FEX11
 set_property PACKAGE_PIN B21 [get_ports {USR_CPLD_LED[0]}]
 set_property IOSTANDARD LVCMOS18 [get_ports {USR_CPLD_LED[0]}]
@@ -121,3 +121,10 @@ set_property PACKAGE_PIN G22 [get_ports {SI_FCLK_clk_p[1]}]
 set_property PACKAGE_PIN D23 [get_ports {SI_FCLK_clk_p[2]}]
 set_property PACKAGE_PIN G24 [get_ports {SI_FCLK_clk_p[0]}]
 set_property IOSTANDARD LVDS_25 [get_ports {SI_FCLK_*}]
+
+
+create_clock -name rx_ref_clk   -period  4.00 [get_ports rx_ref_clk_p]
+create_clock -name rx_div_clk   -period  6.40 [get_pins i_system_wrapper/system_i/util_fmcjesdadc1_xcvr/inst/i_xch_0/i_gtxe2_channel/RXOUTCLK]
+
+set_property ASYNC_REG TRUE [get_cells -hier -filter {name =~ *sysref_en_m*}]
+set_false_path -to [get_cells -hier -filter {name =~ *sysref_en_m1*  && IS_SEQUENTIAL}]

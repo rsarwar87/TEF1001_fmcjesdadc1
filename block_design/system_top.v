@@ -65,8 +65,8 @@ module system_top (
   input       [ 3:0]      rx_data_p,
   input       [ 3:0]      rx_data_n,
   
-  input       [ 9:0]      USR_LED,
-  input       [ 0:0]      USR_CPLD_LED,
+  output      [ 9:0]      USR_LED,
+  output      [ 0:0]      USR_CPLD_LED,
 
   input                   PCI_PERSTN,
 
