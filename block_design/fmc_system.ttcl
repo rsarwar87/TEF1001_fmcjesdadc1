@@ -1,0 +1,429 @@
+set bCheckIPsPassed 1
+##################################################################
+# CHECK IPs
+##################################################################
+import_files -norecurse ../block_design/system_top.v
+set_property top system_top [current_fileset]
+import_files -norecurse ../block_design/fmcjesdadc1_spi.v
+import_files -norecurse ../ip_lib/analoguedevice/common/ad_sysref_gen.v 
+#import_files -norecurse ../ip_lib/analoguedevice/xilinx/common/ad_iobuf.v 
+set bCheckIPs 1
+if { $bCheckIPs == 1 } {
+   set list_check_ips "\ 
+analog.com:user:axi_ad9250:1.0\
+analog.com:user:util_cpack2:1.0\
+analog.com:user:axi_dmac:1.0\
+xilinx.com:ip:proc_sys_reset:5.0\
+analog.com:user:axi_adxcvr:1.0\
+xilinx.com:ip:axi_gpio:2.0\
+xilinx.com:ip:axi_quad_spi:3.2\
+analog.com:user:util_bsplit:1.0\
+analog.com:user:util_adxcvr:1.0\
+analog.com:user:jesd204_rx:1.0\
+analog.com:user:axi_jesd204_rx:1.0\
+"
+
+   set list_ips_missing ""
+   common::send_msg_id "BD_TCL-006" "INFO" "Checking if the following IPs exist in the project's IP catalog: $list_check_ips ."
+
+   foreach ip_vlnv $list_check_ips {
+      set ip_obj [get_ipdefs -all $ip_vlnv]
+      if { $ip_obj eq "" } {
+         lappend list_ips_missing $ip_vlnv
+      }
+   }
+
+   if { $list_ips_missing ne "" } {
+      catch {common::send_msg_id "BD_TCL-115" "ERROR" "The following IPs are not found in the IP Catalog:\n  $list_ips_missing\n\nResolution: Please add the repository containing the IP(s) to the project." }
+      set bCheckIPsPassed 0
+   }
+
+}
+
+if { $bCheckIPsPassed != 1 } {
+  common::send_msg_id "BD_TCL-1003" "WARNING" "Will not continue with creation of design due to the error(s) above."
+  return 3
+}
+
+##################################################################
+# DESIGN PROCs
+##################################################################
+
+
+# Hierarchical cell: axi_ad9250_jesd
+proc create_hier_cell_axi_ad9250_jesd { parentCell nameHier } {
+
+  variable script_folder
+
+  if { $parentCell eq "" || $nameHier eq "" } {
+     catch {common::send_msg_id "BD_TCL-102" "ERROR" "create_hier_cell_axi_ad9250_jesd() - Empty argument(s)!"}
+     return
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+  # Create cell and set as current instance
+  set hier_obj [create_bd_cell -type hier $nameHier]
+  current_bd_instance $hier_obj
+
+  # Create interface pins
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:display_jesd204:jesd204_rx_bus_rtl:1.0 rx_phy0
+
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:display_jesd204:jesd204_rx_bus_rtl:1.0 rx_phy1
+
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:display_jesd204:jesd204_rx_bus_rtl:1.0 rx_phy2
+
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:display_jesd204:jesd204_rx_bus_rtl:1.0 rx_phy3
+
+  create_bd_intf_pin -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi
+
+
+  # Create pins
+  create_bd_pin -dir I -type clk device_clk
+  create_bd_pin -dir O -type intr irq
+  create_bd_pin -dir O phy_en_char_align
+  create_bd_pin -dir O -from 127 -to 0 rx_data_tdata
+  create_bd_pin -dir O rx_data_tvalid
+  create_bd_pin -dir O -from 3 -to 0 rx_eof
+  create_bd_pin -dir O -from 3 -to 0 rx_sof
+  create_bd_pin -dir I -type clk s_axi_aclk
+  create_bd_pin -dir I -type rst s_axi_aresetn
+  create_bd_pin -dir O -from 0 -to 0 sync
+  create_bd_pin -dir I sysref
+
+  # Create instance: rx, and set properties
+  set rx [ create_bd_cell -type ip -vlnv analog.com:user:jesd204_rx:1.0 rx ]
+  set_property -dict [ list \
+   CONFIG.NUM_LANES {4} \
+   CONFIG.NUM_LINKS {1} \
+ ] $rx
+
+  # Create instance: rx_axi, and set properties
+  set rx_axi [ create_bd_cell -type ip -vlnv analog.com:user:axi_jesd204_rx:1.0 rx_axi ]
+  set_property -dict [ list \
+   CONFIG.NUM_LANES {4} \
+   CONFIG.NUM_LINKS {1} \
+ ] $rx_axi
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net rx_axi_rx_cfg [get_bd_intf_pins rx/rx_cfg] [get_bd_intf_pins rx_axi/rx_cfg]
+  connect_bd_intf_net -intf_net rx_phy0_1 [get_bd_intf_pins rx_phy0] [get_bd_intf_pins rx/rx_phy0]
+  connect_bd_intf_net -intf_net rx_phy1_1 [get_bd_intf_pins rx_phy1] [get_bd_intf_pins rx/rx_phy1]
+  connect_bd_intf_net -intf_net rx_phy2_1 [get_bd_intf_pins rx_phy2] [get_bd_intf_pins rx/rx_phy2]
+  connect_bd_intf_net -intf_net rx_phy3_1 [get_bd_intf_pins rx_phy3] [get_bd_intf_pins rx/rx_phy3]
+  connect_bd_intf_net -intf_net rx_rx_event [get_bd_intf_pins rx/rx_event] [get_bd_intf_pins rx_axi/rx_event]
+  connect_bd_intf_net -intf_net rx_rx_ilas_config [get_bd_intf_pins rx/rx_ilas_config] [get_bd_intf_pins rx_axi/rx_ilas_config]
+  connect_bd_intf_net -intf_net rx_rx_status [get_bd_intf_pins rx/rx_status] [get_bd_intf_pins rx_axi/rx_status]
+  connect_bd_intf_net -intf_net s_axi_1 [get_bd_intf_pins s_axi] [get_bd_intf_pins rx_axi/s_axi]
+
+  # Create port connections
+  connect_bd_net -net device_clk_1 [get_bd_pins device_clk] [get_bd_pins rx/clk] [get_bd_pins rx_axi/core_clk]
+  connect_bd_net -net rx_axi_core_reset [get_bd_pins rx/reset] [get_bd_pins rx_axi/core_reset]
+  connect_bd_net -net rx_axi_irq [get_bd_pins irq] [get_bd_pins rx_axi/irq]
+  connect_bd_net -net rx_phy_en_char_align [get_bd_pins phy_en_char_align] [get_bd_pins rx/phy_en_char_align]
+  connect_bd_net -net rx_rx_data [get_bd_pins rx_data_tdata] [get_bd_pins rx/rx_data]
+  connect_bd_net -net rx_rx_eof [get_bd_pins rx_eof] [get_bd_pins rx/rx_eof]
+  connect_bd_net -net rx_rx_sof [get_bd_pins rx_sof] [get_bd_pins rx/rx_sof]
+  connect_bd_net -net rx_rx_valid [get_bd_pins rx_data_tvalid] [get_bd_pins rx/rx_valid]
+  connect_bd_net -net rx_sync [get_bd_pins sync] [get_bd_pins rx/sync]
+  connect_bd_net -net s_axi_aclk_1 [get_bd_pins s_axi_aclk] [get_bd_pins rx_axi/s_axi_aclk]
+  connect_bd_net -net s_axi_aresetn_1 [get_bd_pins s_axi_aresetn] [get_bd_pins rx_axi/s_axi_aresetn]
+  connect_bd_net -net sysref_1 [get_bd_pins sysref] [get_bd_pins rx/sysref]
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+}
+
+
+# Procedure to create entire design; Provide argument to make
+# procedure reusable. If parentCell is "", will use root.
+proc create_root_design { parentCell } {
+
+  variable script_folder
+  variable design_name
+
+  if { $parentCell eq "" } {
+     set parentCell [get_bd_cells /]
+  }
+
+  # Get object for parentCell
+  set parentObj [get_bd_cells $parentCell]
+  if { $parentObj == "" } {
+     catch {common::send_msg_id "BD_TCL-100" "ERROR" "Unable to find parent cell <$parentCell>!"}
+     return
+  }
+
+  # Make sure parentObj is hier blk
+  set parentType [get_property TYPE $parentObj]
+  if { $parentType ne "hier" } {
+     catch {common::send_msg_id "BD_TCL-101" "ERROR" "Parent <$parentObj> has TYPE = <$parentType>. Expected to be <hier>."}
+     return
+  }
+
+  # Save current instance; Restore later
+  set oldCurInst [current_bd_instance .]
+
+  # Set parent object as current
+  current_bd_instance $parentObj
+
+
+  # Create interface ports
+
+  # Create ports
+  set gpio_o [ create_bd_port -dir O -from 31 -to 0 gpio_o ]
+  set rx_core_clk [ create_bd_port -dir O rx_core_clk ]
+  set rx_data_0_n [ create_bd_port -dir I rx_data_0_n ]
+  set rx_data_0_p [ create_bd_port -dir I rx_data_0_p ]
+  set rx_data_1_n [ create_bd_port -dir I rx_data_1_n ]
+  set rx_data_1_p [ create_bd_port -dir I rx_data_1_p ]
+  set rx_data_2_n [ create_bd_port -dir I rx_data_2_n ]
+  set rx_data_2_p [ create_bd_port -dir I rx_data_2_p ]
+  set rx_data_3_n [ create_bd_port -dir I rx_data_3_n ]
+  set rx_data_3_p [ create_bd_port -dir I rx_data_3_p ]
+  set rx_ref_clk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 rx_ref_clk]
+  set rx_sync [ create_bd_port -dir O -from 0 -to 0 rx_sync ]
+  set rx_sysref [ create_bd_port -dir I rx_sysref ]
+  set spi_clk_i [ create_bd_port -dir I spi_clk_i ]
+  set spi_clk_o [ create_bd_port -dir O spi_clk_o ]
+  set spi_csn_i [ create_bd_port -dir I -from 7 -to 0 spi_csn_i ]
+  set spi_csn_o [ create_bd_port -dir O -from 7 -to 0 spi_csn_o ]
+  set spi_sdi_i [ create_bd_port -dir I spi_sdi_i ]
+  set spi_sdo_i [ create_bd_port -dir I spi_sdo_i ]
+  set spi_sdo_o [ create_bd_port -dir O spi_sdo_o ]
+
+  # Create instance: axi_ad9250_0_core, and set properties
+  set axi_ad9250_0_core [ create_bd_cell -type ip -vlnv analog.com:user:axi_ad9250:1.0 axi_ad9250_0_core ]
+
+  # Create instance: axi_ad9250_0_cpack, and set properties
+  set axi_ad9250_0_cpack [ create_bd_cell -type ip -vlnv analog.com:user:util_cpack2:1.0 axi_ad9250_0_cpack ]
+  set_property -dict [ list \
+   CONFIG.NUM_OF_CHANNELS {2} \
+   CONFIG.SAMPLES_PER_CHANNEL {2} \
+   CONFIG.SAMPLE_DATA_WIDTH {16} \
+ ] $axi_ad9250_0_cpack
+
+  # Create instance: axi_ad9250_0_dma, and set properties
+  set axi_ad9250_0_dma [ create_bd_cell -type ip -vlnv analog.com:user:axi_dmac:1.0 axi_ad9250_0_dma ]
+  set_property -dict [ list \
+   CONFIG.AXI_SLICE_DEST {false} \
+   CONFIG.AXI_SLICE_SRC {false} \
+   CONFIG.CYCLIC {false} \
+   CONFIG.DMA_2D_TRANSFER {false} \
+   CONFIG.DMA_DATA_WIDTH_DEST {512} \
+   CONFIG.DMA_DATA_WIDTH_SRC {64} \
+   CONFIG.DMA_LENGTH_WIDTH {24} \
+   CONFIG.DMA_TYPE_DEST {0} \
+   CONFIG.DMA_TYPE_SRC {2} \
+   CONFIG.FIFO_SIZE {32} \
+   CONFIG.ID {0} \
+   CONFIG.SYNC_TRANSFER_START {true} \
+ ] $axi_ad9250_0_dma
+
+  # Create instance: axi_ad9250_1_core, and set properties
+  set axi_ad9250_1_core [ create_bd_cell -type ip -vlnv analog.com:user:axi_ad9250:1.0 axi_ad9250_1_core ]
+
+  # Create instance: axi_ad9250_1_cpack, and set properties
+  set axi_ad9250_1_cpack [ create_bd_cell -type ip -vlnv analog.com:user:util_cpack2:1.0 axi_ad9250_1_cpack ]
+  set_property -dict [ list \
+   CONFIG.NUM_OF_CHANNELS {2} \
+   CONFIG.SAMPLES_PER_CHANNEL {2} \
+   CONFIG.SAMPLE_DATA_WIDTH {16} \
+ ] $axi_ad9250_1_cpack
+
+  # Create instance: axi_ad9250_1_dma, and set properties
+  set axi_ad9250_1_dma [ create_bd_cell -type ip -vlnv analog.com:user:axi_dmac:1.0 axi_ad9250_1_dma ]
+  set_property -dict [ list \
+   CONFIG.AXI_SLICE_DEST {false} \
+   CONFIG.AXI_SLICE_SRC {false} \
+   CONFIG.CYCLIC {false} \
+   CONFIG.DMA_2D_TRANSFER {false} \
+   CONFIG.DMA_DATA_WIDTH_DEST {512} \
+   CONFIG.DMA_DATA_WIDTH_SRC {64} \
+   CONFIG.DMA_LENGTH_WIDTH {24} \
+   CONFIG.DMA_TYPE_DEST {0} \
+   CONFIG.DMA_TYPE_SRC {2} \
+   CONFIG.FIFO_SIZE {32} \
+   CONFIG.ID {0} \
+   CONFIG.SYNC_TRANSFER_START {true} \
+ ] $axi_ad9250_1_dma
+
+  # Create instance: axi_ad9250_jesd
+  create_hier_cell_axi_ad9250_jesd [current_bd_instance .] axi_ad9250_jesd
+
+  # Create instance: axi_ad9250_jesd_rstgen, and set properties
+  set axi_ad9250_jesd_rstgen [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 axi_ad9250_jesd_rstgen ]
+
+  # Create instance: axi_ad9250_xcvr, and set properties
+  set axi_ad9250_xcvr [ create_bd_cell -type ip -vlnv analog.com:user:axi_adxcvr:1.0 axi_ad9250_xcvr ]
+  set_property -dict [ list \
+   CONFIG.LPM_OR_DFE_N {0} \
+   CONFIG.NUM_OF_LANES {4} \
+   CONFIG.OUT_CLK_SEL {0x2} \
+   CONFIG.QPLL_ENABLE {0} \
+   CONFIG.SYS_CLK_SEL {0x0} \
+   CONFIG.TX_OR_RX_N {0} \
+ ] $axi_ad9250_xcvr
+
+  # Create instance: axi_gpio, and set properties
+  set axi_gpio [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio ]
+  set_property -dict [ list \
+   CONFIG.C_GPIO_WIDTH {32} \
+   CONFIG.C_INTERRUPT_PRESENT {0} \
+ ] $axi_gpio
+
+  # Create instance: axi_spi, and set properties
+  set axi_spi [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_quad_spi:3.2 axi_spi ]
+  set_property -dict [ list \
+   CONFIG.C_NUM_SS_BITS {8} \
+   CONFIG.C_SCK_RATIO {8} \
+   CONFIG.C_USE_STARTUP {0} \
+ ] $axi_spi
+
+  # Create instance: data_bsplit, and set properties
+  set data_bsplit [ create_bd_cell -type ip -vlnv analog.com:user:util_bsplit:1.0 data_bsplit ]
+  set_property -dict [ list \
+   CONFIG.CHANNEL_DATA_WIDTH {64} \
+   CONFIG.NUM_OF_CHANNELS {2} \
+ ] $data_bsplit
+
+  # Create instance: util_fmcjesdadc1_xcvr, and set properties
+  set util_fmcjesdadc1_xcvr [ create_bd_cell -type ip -vlnv analog.com:user:util_adxcvr:1.0 util_fmcjesdadc1_xcvr ]
+  set_property -dict [ list \
+   CONFIG.CPLL_FBDIV {2} \
+   CONFIG.QPLL_FBDIV {0x080} \
+   CONFIG.RX_CDR_CFG {0x03000023ff10200020} \
+   CONFIG.RX_CLK25_DIV {10} \
+   CONFIG.RX_DFE_LPM_CFG {0x0904} \
+   CONFIG.RX_NUM_OF_LANES {4} \
+   CONFIG.RX_OUT_DIV {1} \
+   CONFIG.RX_PMA_CFG {0x00018480} \
+   CONFIG.TX_CLK25_DIV {10} \
+   CONFIG.TX_NUM_OF_LANES {0} \
+   CONFIG.TX_OUT_DIV {1} \
+ ] $util_fmcjesdadc1_xcvr
+
+  # Create interface connections
+  connect_bd_intf_net -intf_net axi_ad9250_0_cpack_packed_fifo_wr [get_bd_intf_pins axi_ad9250_0_cpack/packed_fifo_wr] [get_bd_intf_pins axi_ad9250_0_dma/fifo_wr]
+  connect_bd_intf_net -intf_net axi_ad9250_1_cpack_packed_fifo_wr [get_bd_intf_pins axi_ad9250_1_cpack/packed_fifo_wr] [get_bd_intf_pins axi_ad9250_1_dma/fifo_wr]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_ch_0 [get_bd_intf_pins axi_ad9250_xcvr/up_ch_0] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_rx_0]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_ch_1 [get_bd_intf_pins axi_ad9250_xcvr/up_ch_1] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_rx_1]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_ch_2 [get_bd_intf_pins axi_ad9250_xcvr/up_ch_2] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_rx_2]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_ch_3 [get_bd_intf_pins axi_ad9250_xcvr/up_ch_3] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_rx_3]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_es_0 [get_bd_intf_pins axi_ad9250_xcvr/up_es_0] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_es_0]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_es_1 [get_bd_intf_pins axi_ad9250_xcvr/up_es_1] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_es_1]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_es_2 [get_bd_intf_pins axi_ad9250_xcvr/up_es_2] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_es_2]
+  connect_bd_intf_net -intf_net axi_ad9250_xcvr_up_es_3 [get_bd_intf_pins axi_ad9250_xcvr/up_es_3] [get_bd_intf_pins util_fmcjesdadc1_xcvr/up_es_3]
+  connect_bd_intf_net -intf_net util_fmcjesdadc1_xcvr_rx_0 [get_bd_intf_pins axi_ad9250_jesd/rx_phy0] [get_bd_intf_pins util_fmcjesdadc1_xcvr/rx_0]
+  connect_bd_intf_net -intf_net util_fmcjesdadc1_xcvr_rx_1 [get_bd_intf_pins axi_ad9250_jesd/rx_phy1] [get_bd_intf_pins util_fmcjesdadc1_xcvr/rx_1]
+  connect_bd_intf_net -intf_net util_fmcjesdadc1_xcvr_rx_2 [get_bd_intf_pins axi_ad9250_jesd/rx_phy2] [get_bd_intf_pins util_fmcjesdadc1_xcvr/rx_2]
+  connect_bd_intf_net -intf_net util_fmcjesdadc1_xcvr_rx_3 [get_bd_intf_pins axi_ad9250_jesd/rx_phy3] [get_bd_intf_pins util_fmcjesdadc1_xcvr/rx_3]
+
+  # Create port connections
+  connect_bd_net -net axi_ad9250_0_core_adc_clk [get_bd_pins axi_ad9250_0_core/adc_clk] [get_bd_pins axi_ad9250_0_dma/fifo_wr_clk]
+  connect_bd_net -net axi_ad9250_0_core_adc_data_a [get_bd_pins axi_ad9250_0_core/adc_data_a] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_data_0]
+  connect_bd_net -net axi_ad9250_0_core_adc_data_b [get_bd_pins axi_ad9250_0_core/adc_data_b] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_data_1]
+  connect_bd_net -net axi_ad9250_0_core_adc_enable_a [get_bd_pins axi_ad9250_0_core/adc_enable_a] [get_bd_pins axi_ad9250_0_cpack/enable_0]
+  connect_bd_net -net axi_ad9250_0_core_adc_enable_b [get_bd_pins axi_ad9250_0_core/adc_enable_b] [get_bd_pins axi_ad9250_0_cpack/enable_1]
+  connect_bd_net -net axi_ad9250_0_core_adc_valid_a [get_bd_pins axi_ad9250_0_core/adc_valid_a] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_en]
+  connect_bd_net -net axi_ad9250_0_cpack_fifo_wr_overflow [get_bd_pins axi_ad9250_0_core/adc_dovf] [get_bd_pins axi_ad9250_0_cpack/fifo_wr_overflow]
+  connect_bd_net -net axi_ad9250_1_core_adc_clk [get_bd_pins axi_ad9250_1_core/adc_clk] [get_bd_pins axi_ad9250_1_dma/fifo_wr_clk]
+  connect_bd_net -net axi_ad9250_1_core_adc_data_a [get_bd_pins axi_ad9250_1_core/adc_data_a] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_data_0]
+  connect_bd_net -net axi_ad9250_1_core_adc_data_b [get_bd_pins axi_ad9250_1_core/adc_data_b] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_data_1]
+  connect_bd_net -net axi_ad9250_1_core_adc_enable_a [get_bd_pins axi_ad9250_1_core/adc_enable_a] [get_bd_pins axi_ad9250_1_cpack/enable_0]
+  connect_bd_net -net axi_ad9250_1_core_adc_enable_b [get_bd_pins axi_ad9250_1_core/adc_enable_b] [get_bd_pins axi_ad9250_1_cpack/enable_1]
+  connect_bd_net -net axi_ad9250_1_core_adc_valid_a [get_bd_pins axi_ad9250_1_core/adc_valid_a] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_en]
+  connect_bd_net -net axi_ad9250_1_cpack_fifo_wr_overflow [get_bd_pins axi_ad9250_1_core/adc_dovf] [get_bd_pins axi_ad9250_1_cpack/fifo_wr_overflow]
+  connect_bd_net -net axi_ad9250_jesd_phy_en_char_align [get_bd_pins axi_ad9250_jesd/phy_en_char_align] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_0] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_1] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_2] [get_bd_pins util_fmcjesdadc1_xcvr/rx_calign_3]
+  connect_bd_net -net axi_ad9250_jesd_rstgen_peripheral_reset [get_bd_pins axi_ad9250_0_cpack/reset] [get_bd_pins axi_ad9250_1_cpack/reset] [get_bd_pins axi_ad9250_jesd_rstgen/peripheral_reset]
+  connect_bd_net -net axi_ad9250_jesd_rx_data_tdata [get_bd_pins axi_ad9250_jesd/rx_data_tdata] [get_bd_pins data_bsplit/data]
+  connect_bd_net -net axi_ad9250_jesd_rx_sof [get_bd_pins axi_ad9250_0_core/rx_sof] [get_bd_pins axi_ad9250_1_core/rx_sof] [get_bd_pins axi_ad9250_jesd/rx_sof]
+  connect_bd_net -net axi_ad9250_jesd_sync [get_bd_ports rx_sync] [get_bd_pins axi_ad9250_jesd/sync]
+  connect_bd_net -net axi_ad9250_xcvr_up_pll_rst [get_bd_pins axi_ad9250_xcvr/up_pll_rst] [get_bd_pins util_fmcjesdadc1_xcvr/up_cpll_rst_0] [get_bd_pins util_fmcjesdadc1_xcvr/up_cpll_rst_1] [get_bd_pins util_fmcjesdadc1_xcvr/up_cpll_rst_2] [get_bd_pins util_fmcjesdadc1_xcvr/up_cpll_rst_3] [get_bd_pins util_fmcjesdadc1_xcvr/up_qpll_rst_0]
+  connect_bd_net -net axi_gpio_led_gpio_io_o [get_bd_ports gpio_o] [get_bd_pins axi_gpio/gpio_io_o]
+  connect_bd_net -net axi_spi_io0_o [get_bd_ports spi_sdo_o] [get_bd_pins axi_spi/io0_o]
+  connect_bd_net -net axi_spi_sck_o [get_bd_ports spi_clk_o] [get_bd_pins axi_spi/sck_o]
+  connect_bd_net -net axi_spi_ss_o [get_bd_ports spi_csn_o] [get_bd_pins axi_spi/ss_o]
+  connect_bd_net -net data_bsplit_split_data_0 [get_bd_pins axi_ad9250_0_core/rx_data] [get_bd_pins data_bsplit/split_data_0]
+  connect_bd_net -net data_bsplit_split_data_1 [get_bd_pins axi_ad9250_1_core/rx_data] [get_bd_pins data_bsplit/split_data_1]
+  connect_bd_net -net rx_data_0_n_1 [get_bd_ports rx_data_0_n] [get_bd_pins util_fmcjesdadc1_xcvr/rx_0_n]
+  connect_bd_net -net rx_data_0_p_1 [get_bd_ports rx_data_0_p] [get_bd_pins util_fmcjesdadc1_xcvr/rx_0_p]
+  connect_bd_net -net rx_data_1_n_1 [get_bd_ports rx_data_1_n] [get_bd_pins util_fmcjesdadc1_xcvr/rx_1_n]
+  connect_bd_net -net rx_data_1_p_1 [get_bd_ports rx_data_1_p] [get_bd_pins util_fmcjesdadc1_xcvr/rx_1_p]
+  connect_bd_net -net rx_data_2_n_1 [get_bd_ports rx_data_2_n] [get_bd_pins util_fmcjesdadc1_xcvr/rx_2_n]
+  connect_bd_net -net rx_data_2_p_1 [get_bd_ports rx_data_2_p] [get_bd_pins util_fmcjesdadc1_xcvr/rx_2_p]
+  connect_bd_net -net rx_data_3_n_1 [get_bd_ports rx_data_3_n] [get_bd_pins util_fmcjesdadc1_xcvr/rx_3_n]
+  connect_bd_net -net rx_data_3_p_1 [get_bd_ports rx_data_3_p] [get_bd_pins util_fmcjesdadc1_xcvr/rx_3_p]
+  connect_bd_net -net spi_clk_i_1 [get_bd_ports spi_clk_i] [get_bd_pins axi_spi/sck_i]
+  connect_bd_net -net spi_csn_i_1 [get_bd_ports spi_csn_i] [get_bd_pins axi_spi/ss_i]
+  connect_bd_net -net spi_sdi_i_1 [get_bd_ports spi_sdi_i] [get_bd_pins axi_spi/io1_i]
+  connect_bd_net -net spi_sdo_i_1 [get_bd_ports spi_sdo_i] [get_bd_pins axi_spi/io0_i]
+  connect_bd_net -net sys_200m_clk [get_bd_pins axi_ad9250_0_dma/m_dest_axi_aclk] [get_bd_pins axi_ad9250_1_dma/m_dest_axi_aclk]
+  connect_bd_net -net sys_200m_resetn [get_bd_pins axi_ad9250_0_dma/m_dest_axi_aresetn] [get_bd_pins axi_ad9250_1_dma/m_dest_axi_aresetn]
+  connect_bd_net -net sys_cpu_clk [get_bd_pins axi_ad9250_0_core/s_axi_aclk] [get_bd_pins axi_ad9250_0_dma/s_axi_aclk] [get_bd_pins axi_ad9250_1_core/s_axi_aclk] [get_bd_pins axi_ad9250_1_dma/s_axi_aclk] [get_bd_pins axi_ad9250_jesd/s_axi_aclk] [get_bd_pins axi_ad9250_xcvr/s_axi_aclk] [get_bd_pins axi_gpio/s_axi_aclk] [get_bd_pins axi_spi/ext_spi_clk] [get_bd_pins axi_spi/s_axi_aclk] [get_bd_pins util_fmcjesdadc1_xcvr/up_clk]
+  connect_bd_net -net sys_cpu_resetn [get_bd_pins axi_ad9250_0_core/s_axi_aresetn] [get_bd_pins axi_ad9250_0_dma/s_axi_aresetn] [get_bd_pins axi_ad9250_1_core/s_axi_aresetn] [get_bd_pins axi_ad9250_1_dma/s_axi_aresetn] [get_bd_pins axi_ad9250_jesd/s_axi_aresetn] [get_bd_pins axi_ad9250_jesd_rstgen/ext_reset_in] [get_bd_pins axi_ad9250_xcvr/s_axi_aresetn] [get_bd_pins axi_gpio/s_axi_aresetn] [get_bd_pins axi_spi/s_axi_aresetn] [get_bd_pins util_fmcjesdadc1_xcvr/up_rstn]
+  connect_bd_net -net sysref_1 [get_bd_ports rx_sysref] [get_bd_pins axi_ad9250_jesd/sysref]
+  connect_bd_net -net util_fmcjesdadc1_xcvr_rx_out_clk_0 [get_bd_ports rx_core_clk] [get_bd_pins axi_ad9250_0_core/rx_clk] [get_bd_pins axi_ad9250_0_cpack/clk] [get_bd_pins axi_ad9250_1_core/rx_clk] [get_bd_pins axi_ad9250_1_cpack/clk] [get_bd_pins axi_ad9250_jesd/device_clk] [get_bd_pins axi_ad9250_jesd_rstgen/slowest_sync_clk] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_0] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_1] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_2] [get_bd_pins util_fmcjesdadc1_xcvr/rx_clk_3] [get_bd_pins util_fmcjesdadc1_xcvr/rx_out_clk_0]
+
+  # Create address segments
+
+
+  # Restore current instance
+  current_bd_instance $oldCurInst
+
+  save_bd_design
+}
+# End of create_root_design()
+
+
+##################################################################
+# MAIN FLOW
+##################################################################
+
+create_root_design ""
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {/ddr/mig_7series_0/ui_clk (100 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_clk (100 MHz)} Master {/axi_ad9250_xcvr/m_axi} Slave {/ddr/mig_7series_0/S_AXI} intc_ip {/ddr/axi_interconnect_ddr} master_apm {0}}  [get_bd_intf_pins axi_ad9250_xcvr/m_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {Auto} Clk_slave {/ddr/mig_7series_0/ui_clk (100 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_clk (100 MHz)} Master {/axi_ad9250_0_dma/m_dest_axi} Slave {/ddr/mig_7series_0/S_AXI} intc_ip {/ddr/axi_interconnect_ddr} master_apm {0}}  [get_bd_intf_pins axi_ad9250_0_dma/m_dest_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {Auto} Clk_slave {/ddr/mig_7series_0/ui_clk (100 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_clk (100 MHz)} Master {/axi_ad9250_1_dma/m_dest_axi} Slave {/ddr/mig_7series_0/S_AXI} intc_ip {/ddr/axi_interconnect_ddr} master_apm {0}}  [get_bd_intf_pins axi_ad9250_1_dma/m_dest_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_spi/AXI_LITE} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_spi/AXI_LITE]
+
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_gpio/S_AXI} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_gpio/S_AXI]
+
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_xcvr/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_xcvr/s_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_jesd/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_jesd/s_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_1_dma/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_1_dma/s_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_1_core/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_1_core/s_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_0_dma/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_0_dma/s_axi]
+apply_bd_automation -rule xilinx.com:bd_rule:axi4 -config { Clk_master {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Clk_slave {Auto} Clk_xbar {/ddr/mig_7series_0/ui_addn_clk_0 (100 MHz)} Master {/sys_mb/microblaze_0 (Periph)} Slave {/axi_ad9250_0_core/s_axi} intc_ip {/microblaze_0_axi_periph} master_apm {0}}  [get_bd_intf_pins axi_ad9250_0_core/s_axi]
+set_property -dict [list CONFIG.NUM_PORTS {8}] [get_bd_cells sys_mb/microblaze_0_xlconcat]
+connect_bd_net [get_bd_pins axi_spi/ip2intc_irpt] [get_bd_pins sys_mb/microblaze_0_xlconcat/In4]
+connect_bd_net [get_bd_pins axi_ad9250_1_dma/irq] [get_bd_pins sys_mb/microblaze_0_xlconcat/In5]
+connect_bd_net [get_bd_pins axi_ad9250_0_dma/irq] [get_bd_pins sys_mb/microblaze_0_xlconcat/In6]
+connect_bd_net [get_bd_pins axi_ad9250_jesd/irq] [get_bd_pins sys_mb/microblaze_0_xlconcat/In7]
+
+create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf_0
+connect_bd_intf_net [get_bd_intf_ports rx_ref_clk] [get_bd_intf_pins util_ds_buf_0/CLK_IN_D]
+connect_bd_net -net rx_ref_clk_0_1 [get_bd_pins util_ds_buf_0/IBUF_OUT] [get_bd_pins util_fmcjesdadc1_xcvr/cpll_ref_clk_0] [get_bd_pins util_fmcjesdadc1_xcvr/cpll_ref_clk_1] [get_bd_pins util_fmcjesdadc1_xcvr/cpll_ref_clk_2] [get_bd_pins util_fmcjesdadc1_xcvr/cpll_ref_clk_3] [get_bd_pins util_fmcjesdadc1_xcvr/qpll_ref_clk_0]
+set_property -dict [list CONFIG.C_BUF_TYPE {IBUFDSGTE}] [get_bd_cells util_ds_buf_0]
+
+move_bd_cells [get_bd_cells axi_ad9250_jesd] [get_bd_cells data_bsplit]
+move_bd_cells [get_bd_cells axi_ad9250_jesd] [get_bd_cells axi_ad9250_0_core]
+move_bd_cells [get_bd_cells axi_ad9250_jesd] [get_bd_cells axi_ad9250_1_core]
+group_bd_cells ad_dmac [get_bd_cells axi_ad9250_0_cpack] [get_bd_cells axi_ad9250_0_dma] [get_bd_cells axi_ad9250_1_dma]  [get_bd_cells axi_ad9250_1_cpack]
+group_bd_cells ad_xcvr [get_bd_cells util_fmcjesdadc1_xcvr] [get_bd_cells axi_ad9250_xcvr] [get_bd_cells util_ds_buf_0]

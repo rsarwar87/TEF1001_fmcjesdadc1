@@ -864,7 +864,8 @@ proc create_root_design { parentCell } {
   current_bd_instance $oldCurInst
 
   validate_bd_design
-  source ../block_design/fmcjesdadc_bd.ttcl
+#  source ../block_design/fmcjesdadc_bd.ttcl
+  source ../block_design/fmc_system.ttcl
   save_bd_design
 }
 # End of create_root_design()
