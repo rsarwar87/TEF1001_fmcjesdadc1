@@ -6,6 +6,7 @@ import_files -norecurse ../block_design/system_top.v
 set_property top system_top [current_fileset]
 import_files -norecurse ../block_design/fmcjesdadc1_spi.v
 import_files -norecurse ../ip_lib/analoguedevice/common/ad_sysref_gen.v 
+set TE::PR_TOPLEVELNAME system_top
 #import_files -norecurse ../ip_lib/analoguedevice/xilinx/common/ad_iobuf.v 
 set bCheckIPs 1
 if { $bCheckIPs == 1 } {
@@ -427,3 +428,14 @@ move_bd_cells [get_bd_cells axi_ad9250_jesd] [get_bd_cells axi_ad9250_0_core]
 move_bd_cells [get_bd_cells axi_ad9250_jesd] [get_bd_cells axi_ad9250_1_core]
 group_bd_cells ad_dmac [get_bd_cells axi_ad9250_0_cpack] [get_bd_cells axi_ad9250_0_dma] [get_bd_cells axi_ad9250_1_dma]  [get_bd_cells axi_ad9250_1_cpack]
 group_bd_cells ad_xcvr [get_bd_cells util_fmcjesdadc1_xcvr] [get_bd_cells axi_ad9250_xcvr] [get_bd_cells util_ds_buf_0]
+
+set_property offset 0x0000000000000000 [get_bd_addr_segs {pcie/xdma_0/M_AXI/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {pcie/xdma_0/M_AXI/SEG_mig_7series_0_memaddr}]
+set_property offset 0x00000000 [get_bd_addr_segs {ad_xcvr/axi_ad9250_xcvr/m_axi/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {ad_xcvr/axi_ad9250_xcvr/m_axi/SEG_mig_7series_0_memaddr}]
+set_property range 1G [get_bd_addr_segs {ad_dmac/axi_ad9250_0_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property range 2G [get_bd_addr_segs {ad_dmac/axi_ad9250_0_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property offset 0x00000000 [get_bd_addr_segs {ad_dmac/axi_ad9250_1_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property offset 0x00000000 [get_bd_addr_segs {ad_dmac/axi_ad9250_0_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {ad_dmac/axi_ad9250_0_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]
+set_property range 4G [get_bd_addr_segs {ad_dmac/axi_ad9250_1_dma/m_dest_axi/SEG_mig_7series_0_memaddr}]

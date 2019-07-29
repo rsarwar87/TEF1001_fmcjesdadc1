@@ -43,7 +43,7 @@ module system_top (
   input       [ 0:0]      CLK_PCIe_100MHz_clk_p,
 
   output                  DDR3_SDRAM_reset_n,
-  output      [13:0]      DDR3_SDRAM_addr,
+  output      [15:0]      DDR3_SDRAM_addr,
   output      [ 2:0]      DDR3_SDRAM_ba,
   output                  DDR3_SDRAM_cas_n,
   output                  DDR3_SDRAM_ras_n,
