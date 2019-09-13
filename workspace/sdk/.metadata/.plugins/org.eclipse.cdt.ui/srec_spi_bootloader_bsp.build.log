@@ -1,4 +1,4 @@
-10:00:20 **** Build of project srec_spi_bootloader_bsp ****
+10:48:29 **** Auto Build of project srec_spi_bootloader_bsp ****
 make -k all 
 Running Make include in sys_mb_microblaze_0/libsrc/tmrctr_v4_5/src
 make -C sys_mb_microblaze_0/libsrc/tmrctr_v4_5/src -s include  "SHELL=/bin/sh" "COMPILER=mb-gcc" "ARCHIVER=mb-ar" "COMPILER_FLAGS=  -O2 -c -mcpu=v11.0 -mhard-float -mlittle-endian -mno-xl-soft-div -mno-xl-soft-mul -mxl-barrel-shift -mxl-pattern-compare" "EXTRA_COMPILER_FLAGS=-ffunction-sections -fdata-sections -Wall -Wextra"
@@ -191,5 +191,5 @@ xilisf_spr.c:265:24: warning: comparison of integer expressions of different sig
                         ^
 Finished building libraries
 
-10:00:23 Build Finished (took 3s.82ms)
+10:48:33 Build Finished (took 3s.130ms)
 

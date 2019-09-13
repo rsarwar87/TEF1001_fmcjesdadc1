@@ -727,13 +727,13 @@ void usleep(uint32_t us_count)
 {
 	uint32_t count;
 
-	ad_reg_write((XPAR_AXI_TIMER_0_BASEADDR + 0x4), 0x00);
+	ad_reg_write((XPAR_AXI_TIMER_BASEADDR + 0x4), 0x00);
 	for (count = 0; count < us_count; count++) {
-		ad_reg_write((XPAR_AXI_TIMER_0_BASEADDR + 0x0), 0x20);
-		ad_reg_write((XPAR_AXI_TIMER_0_BASEADDR + 0x0), 0x80);
-		while (ad_reg_read(XPAR_AXI_TIMER_0_BASEADDR + 0x8) < 100) {}
+		ad_reg_write((XPAR_AXI_TIMER_BASEADDR + 0x0), 0x20);
+		ad_reg_write((XPAR_AXI_TIMER_BASEADDR + 0x0), 0x80);
+		while (ad_reg_read(XPAR_AXI_TIMER_BASEADDR + 0x8) < 100) {}
 	}
-	ad_reg_write((XPAR_AXI_TIMER_0_BASEADDR + 0x0), 0x20);
+	ad_reg_write((XPAR_AXI_TIMER_BASEADDR + 0x0), 0x20);
 }
 #endif
 

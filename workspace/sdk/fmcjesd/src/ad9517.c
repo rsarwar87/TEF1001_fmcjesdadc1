@@ -141,12 +141,247 @@ int32_t ad9517_setup(struct ad9517_dev **device,
 	mdelay(50);
 
 	ad9517_spi_read(dev, 0x001f, &stat);
-	printf("AD9517 PLL %s.\n", stat & 0x01 ? "ok" : "errors");
+	xil_printf("AD9517 PLL %s.\n", stat & 0x01 ? "ok" : "errors");
+
+	ad9517_status(dev);
 
 	*device = dev;
 
 	return ret;
 }
+
+/***************************************************************************//**
+* @brief ad9517_setup
+*******************************************************************************/
+int32_t ad9517_status(struct ad9517_dev *dev)
+{
+	uint8_t stat;
+	uint8_t stat2;
+	uint8_t stat3;
+	uint16_t addr;
+
+	xil_printf("\n\nAD9517 status\n");
+	addr = 0x0000;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => SDO active: %d; LSB first: %d ; Soft reset: %d.\n", addr, stat & (1 << 0), stat & (1 << 1), stat & (1 << 3));
+
+	addr = 0x0003;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Part ID: %d.\n", addr, stat & 0xFF);
+	xil_printf("\nAD9517 PLL status\n");
+	addr = 0x0010;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PDF polarity: %d, Charge pump %d, charge pump mode %d, PLL power-down. %d\n",addr,
+			stat & (0x1 << 7), stat & (0x7 << 4), stat & (0x3 << 2), stat & (0x1));
+
+
+	addr = 0x0011;
+	ad9517_spi_read(dev, addr, &stat);
+	addr = 0x0012;
+	ad9517_spi_read(dev, addr, &stat2);
+	xil_printf("%x => R counter %d\n", addr, stat + ((stat % 0x3F) << 8));
+
+	addr = 0x0013;
+	ad9517_spi_read(dev, addr, &stat2);
+	xil_printf("%x => A counter %d\n", addr,((stat % 0x3F) ));
+
+	addr = 0x0014;
+	ad9517_spi_read(dev, addr, &stat);
+	addr = 0x0015;
+	ad9517_spi_read(dev, addr, &stat2);
+	xil_printf("%x => B counter %d\n", addr,stat + ((stat % 0x1F) << 8));
+
+
+	addr = 0x0016;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL1 -> Vcp/2: %d, Reset R %d, Reset A and B %d, Reset all %d, Bypass B %d, Prescaler %d\n", addr,
+			stat & (0x1 << 7), stat & (0x1 << 6), stat & (0x1 << 5), stat &  (0x1 << 4), stat & (0x1 << 3), stat & (0x7));
+
+	addr = 0x0017;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL2 -> STATUS pin control: %d, Antibacklash pulse width: %d\n", addr,
+				stat & (0x1F << 2), stat & 0x3);
+
+	addr = 0x0018;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL3 -> Lock detect counter: %d, Digital lock detect window: %d, Disable Digital lock detect window: %d, VCO calibration divider %d, VCO cal now %d\n", addr,
+			stat & (0x3 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x3 << 1), stat & 0x1);
+	addr = 0x0019;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL4 -> R, A, B counters: %d, R path delay: %d, N path delay %d\n", addr,
+				stat & (0x3 << 6), stat & (0x7 << 3), stat & (0x7 << 0));
+
+	addr = 0x001A;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL5 -> Reference frequency monitor threshold : %d, LD pin control %d\n", addr,
+			stat & (0x1 << 6), stat & (0x3F << 1));
+	addr = 0x001B;
+		ad9517_spi_read(dev, addr, &stat);
+		xil_printf("%x => PLL6 -> VCO frequency monitor: %d, REF2: %d, REF1 %d, REFMON %d\n", addr,
+					stat & (0x1 << 7), stat & (0x1 << 6), stat & (0x1 << 5), stat & (0x1F << 0x0));
+
+	addr = 0x001C;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL7 -> Disable switchover: %d, REF2: %d, REF_SEL: %d, REF2 power on %d, REF1 power on %d, Differential %d\n", addr,
+					stat & (0x1 << 7), stat & (0x1 << 6), stat & (0x1 << 5), stat & (0x3 << 2), stat & (0x3 << 1), stat & 0x1);
+
+	addr = 0x001D;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL7 -> PLL status: %d, LD pin comparator: %d, Holdover: %d, External Handover %d, External Handover enable %d\n", addr,
+						stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x1 << 2), stat & (0x3 << 1), stat & 0x1);
+
+	addr = 0x001D;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => PLL Status -> VCO cal: %d, Holdover: %d, REF2: %d, VCO > threshold %d, Ref2  > threshold %d, Ref1  > threshold %d, Digial lock %d\n", addr,
+			stat & (0x1 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x1 << 2), stat & (0x3 << 1), stat & 0x1);
+
+
+	xil_printf("\nAD9517 Fine Delay status\n");
+	addr = 0x0A0;
+	ad9517_spi_read(dev, addr, &stat);
+	ad9517_spi_read(dev, addr+0x1, &stat2);
+	ad9517_spi_read(dev, addr+0x2, &stat3);
+	xil_printf("%x OUT4 delay bypass=> active: %d, ramp capacitors: %d, ramp current: %d,  delay fraction: %d\n", addr,
+				stat & (0x1), stat2 & (0x7 << 3), stat2 & 0x7, stat3 & 0x7F);
+	addr = 0x0A3;
+	ad9517_spi_read(dev, addr, &stat);
+	ad9517_spi_read(dev, addr+0x1, &stat2);
+	ad9517_spi_read(dev, addr+0x2, &stat3);
+	xil_printf("%x OUT5 delay bypass=> active: %d, ramp capacitors: %d, ramp current: %d,  delay fraction: %d\n", addr,
+					stat & (0x1), stat2 & (0x7 << 3), stat2 & 0x7, stat3 & 0x7F);
+	addr = 0x0A6;
+	ad9517_spi_read(dev, addr, &stat);
+	ad9517_spi_read(dev, addr+0x1, &stat2);
+	ad9517_spi_read(dev, addr+0x2, &stat3);
+	xil_printf("%x OUT6 delay bypass=> active: %d, ramp capacitors: %d, ramp current: %d,  delay fraction: %d\n", addr,
+					stat & (0x1), stat2 & (0x7 << 3), stat2 & 0x7, stat3 & 0x7F);
+	addr = 0x0A9;
+	ad9517_spi_read(dev, addr, &stat);
+	ad9517_spi_read(dev, addr+0x1, &stat2);
+	ad9517_spi_read(dev, addr+0x2, &stat3);
+	xil_printf("%x OUT7 delay bypass=> active: %d, ramp capacitors: %d, ramp current: %d,  delay fraction: %d\n", addr,
+					stat & (0x1), stat2 & (0x7 << 3), stat2 & 0x7, stat3 & 0x7F);
+
+
+	xil_printf("\nAD9517 LVPECL output status\n");
+	addr = 0x0F0;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT0=> invert: %d, differential voltage: %d, power-down: %d\n", addr,
+			stat & (0x1 << 4), stat & (0x3 << 2), stat & 0x3);
+	addr = 0x0F1;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT1=> invert: %d, differential voltage: %d, power-down: %d\n", addr,
+			stat & (0x1 << 4), stat & (0x3 << 2), stat & 0x3);
+	addr = 0x0F4;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT2=> invert: %d, differential voltage: %d, power-down: %d\n", addr,
+			stat & (0x1 << 4), stat & (0x3 << 2), stat & 0x3);
+	addr = 0x0F5;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT3=> invert: %d, differential voltage: %d, power-down: %d\n", addr,
+			stat & (0x1 << 4), stat & (0x3 << 2), stat & 0x3);
+
+
+	xil_printf("\nAD9517 LVDS/CMOS output status\n");
+	addr = 0x140;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT4=> CMOS polarity: %d, LVDS/CMOS polarity: %d, CMOS B: %d, Select LVDS/CMOS %d, output current  %d, power-down: %d\n", addr,
+			stat & (0x3 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x3 << 1), stat & 0x1);
+	addr = 0x141;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT5=> CMOS polarity: %d, LVDS/CMOS polarity: %d, CMOS B: %d, Select LVDS/CMOS %d, output current  %d, power-down: %d\n", addr,
+			stat & (0x3 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x3 << 1), stat & 0x1);
+	addr = 0x142;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT5=> CMOS polarity: %d, LVDS/CMOS polarity: %d, CMOS B: %d, Select LVDS/CMOS %d, output current  %d, power-down: %d\n", addr,
+			stat & (0x3 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x3 << 1), stat & 0x1);
+	addr = 0x143;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x OUTPUT5=> CMOS polarity: %d, LVDS/CMOS polarity: %d, CMOS B: %d, Select LVDS/CMOS %d, output current  %d, power-down: %d\n", addr,
+			stat & (0x3 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x3 << 1), stat & 0x1);
+
+
+	xil_printf("\nAD9517 LVPECL Channel Dividers status\n");
+	addr = 0x190;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Divider 0 low cycles: %d, Divider 0 high cycles: %d\n", addr,
+					stat & (0xF << 4), stat & 0xF);
+	addr = 0x191;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Bypass Divider 0: %d, Divider 0 nosync: %d, Divider 0 force high: %d, Start High Divider 0  %d, Divider 0 phase offset  %d\n", addr,
+			stat & (0x1 << 7), stat & (0x1 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & 0xF);
+	addr = 0x192;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Divider 0 direct2output: %d, Divider 0 DCCOFF: %d\n", addr,
+						stat & (0x1 << 1), stat & 0x1);
+	addr = 0x196;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Divider 1 low cycles: %d, Divider 1 high cycles: %d\n", addr,
+					stat & (0xF << 4), stat & 0xF);
+	addr = 0x197;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Bypass Divider 1: %d, Divider 1 nosync: %d, Divider 1 force high: %d, Start High Divider 1  %d, Divider 1 phase offset  %d\n", addr,
+			stat & (0x1 << 7), stat & (0x1 << 6), stat & (0x1 << 5), stat & (0x1 << 4), stat & 0xF);
+	addr = 0x198;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Divider 1 direct2output: %d, Divider 1 DCCOFF: %d\n", addr,
+						stat & (0x1 << 1), stat & 0x1);
+
+
+	xil_printf("\nAD9517 LVDS Channel Dividers status\n");
+	addr = 0x199;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Low Cycles Divider 2.1: %d, High Cycles Divider 2.1: %d\n", addr,
+				stat & (0xF << 4), stat & 0xF);
+	addr = 0x19A;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Phase Offset Divider 2.2: %d, Phase Offset Divider 2.1: %d\n", addr,
+				stat & (0xF << 4), stat & 0xF);
+	addr = 0x19B;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Low Cycles Divider 2.2: %d, High Cycles Divider 2.2: %d\n", addr,
+				stat & (0xF << 4), stat & 0xF);
+	addr = 0x19C;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Bypass Divider 2.2: %d, Bypass Divider 2.1: %d, Divider 2 nosync: %d, Divider 2 force high: %d, Start High Divider 2.2  %d, Start High Divider 2.1  %d\n", addr,
+			stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x1 << 2), stat & (0x3 << 1), stat & 0x1);
+	addr = 0x19D;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Divider 2 DCCOFF: %d\n", addr, stat & 0x1);
+	addr = 0x19E;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Low Cycles Divider 3.1: %d, High Cycles Divider 3.1: %d\n", addr,
+				stat & (0xF << 4), stat & 0xF);
+	addr = 0x19F;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Phase Offset Divider 3.2: %d, Phase Offset Divider 3.1: %d\n", addr,
+				stat & (0xF << 4), stat & 0xF);
+	addr = 0x1A0;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Low Cycles Divider 3.2: %d, High Cycles Divider 3.2: %d\n", addr,
+				stat & (0xF << 4), stat & 0xF);
+	addr = 0x1A1;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Bypass Divider 3.2: %d, Bypass Divider 3.1: %d, Divider 3 nosync: %d, Divider 3 force high: %d, Start High Divider 3.2  %d, Start High Divider 3.1  %d\n", addr,
+			stat & (0x1 << 5), stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x1 << 2), stat & (0x3 << 1), stat & 0x1);
+	addr = 0x1A2;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Divider 3 DCCOFF: %d\n", addr, stat & 0x1);
+
+
+	xil_printf("\nAD9517  VCO Divider and CLK Input\n");
+	addr = 0x1E0;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Power down clock input: %d, Power down VCO clock interface: %d, Power down VCO and CLK: %d, Select VCO or CLK %d, Bypass VCO divider  %d\n", addr,
+			stat & (0x1 << 4), stat & (0x1 << 3), stat & (0x1 << 2), stat & (0x3 << 1), stat & 0x1);
+
+	addr = 0x230;
+	ad9517_spi_read(dev, addr, &stat);
+	xil_printf("%x => Power down sync: %d, distribution ref: %d, soft sync: %d\n", addr,
+			stat & (0x1 << 2), stat & (0x3 << 1), stat & 0x1);
+	return 0;
+}
+
 
 /***************************************************************************//**
 * @brief ad9517_remove

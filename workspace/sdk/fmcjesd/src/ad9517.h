@@ -68,5 +68,5 @@ int32_t ad9517_spi_write(struct ad9517_dev *dev,
 						 uint8_t reg_data);
 
 int32_t ad9517_remove(struct ad9517_dev *dev);
-
+int32_t ad9517_status(struct ad9517_dev *dev);
 #endif

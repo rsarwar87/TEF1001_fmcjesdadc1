@@ -2,8 +2,8 @@
 # updatemem v2019.1 (64-bit)
 # SW Build 2552052 on Fri May 24 14:47:09 MDT 2019
 # 
-# Start of session at: Thu Sep 12 16:07:12 2019
-# Process ID: 16436
+# Start of session at: Fri Sep 13 10:47:15 2019
+# Process ID: 13850
 # Current directory: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk
 # Command line: updatemem -mode batch -source /opt/Xilinx/SDK/2019.1/scripts/updatemem/main.tcl -notrace -tclargs -meminfo /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top_hw_platform_0/system_top.mmi -data /opt/Xilinx/SDK/2019.1/data/embeddedsw/lib/microblaze/mb_bootloop_le.elf -proc i_system_wrapper/msys_i/sys_mb/microblaze_0 -bit /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top_hw_platform_0/system_top.bit -out /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top_hw_platform_0/download.bit -force
 # Log file: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/updatemem.log

@@ -2,12 +2,13 @@
 <section name="Workbench">
 	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
 		<item value="false" key="isRegEx"/>
-		<item value="" key="selection"/>
+		<item value="TIMER" key="selection"/>
 		<item value="false" key="casesensitive"/>
 		<item value="false" key="incremental"/>
 		<item value="true" key="wrap"/>
 		<item value="false" key="wholeword"/>
 		<list key="findhistory">
+			<item value="TIMER"/>
 			<item value="XPAR_SPI_0"/>
 			<item value="XPAR_SPI_0_BASEADDR"/>
 			<item value="DEVICE_ID"/>
@@ -15,7 +16,6 @@
 			<item value="XPAR_AXI_QUAD_SPI_0_BASEADDR"/>
 			<item value="spi_write_and_read"/>
 			<item value="XSpi"/>
-			<item value="SPI_DEVICE_ID"/>
 		</list>
 		<list key="replacehistory">
 			<item value=""/>

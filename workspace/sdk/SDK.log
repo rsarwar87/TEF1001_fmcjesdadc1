@@ -703,3 +703,142 @@ dow /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/
 ----------------End of Script----------------
 
 10:04:06 INFO  : Disconnected from the channel tcfchan#4.
+10:45:51 INFO  : Registering command handlers for SDK TCF services
+10:45:52 INFO  : Launching XSCT server: xsct -n -interactive /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/temp_xsdb_launch_script.tcl
+10:45:54 INFO  : XSCT server has started successfully.
+10:45:54 INFO  : Successfully done setting XSCT server connection channel  
+10:45:54 INFO  : Successfully done setting SDK workspace  
+10:45:54 INFO  : Restoring local repository preferences: 
+		 /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/sw_lib
+10:45:55 INFO  : Processing command line option -lp /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/sw_lib.
+10:45:59 INFO  : SDK has detected change in the last modified timestamps for source hardware specification file Source:1568367927000,  Project:1568304288000
+10:45:59 INFO  : Project system_top_hw_platform_0's source hardware specification located at /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top.hdf is now different from the local copy.
+		 The local copy will be replaced with the source specification and your workspace will be updated.
+10:45:59 INFO  : Copied contents of /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top.hdf into /system_top_hw_platform_0/system.hdf.
+10:46:01 INFO  : Synchronizing projects in the workspace with the hardware platform specification changes.
+10:46:02 INFO  : 
+10:46:03 INFO  : 
+10:46:04 INFO  : Updating hardware inferred compiler options for fmcjesd.
+10:46:05 INFO  : Updating hardware inferred compiler options for srec_spi_bootloader.
+10:46:05 INFO  : Clearing existing target manager status.
+10:46:26 INFO  : Refreshed build settings on project fmcjesd
+10:46:26 INFO  : Refreshed build settings on project srec_spi_bootloader
+10:47:24 INFO  : Connected to target on host '10.211.3.140' and port '3121'.
+10:47:24 INFO  : 'targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0' command is executed.
+10:47:26 INFO  : FPGA configured successfully with bitstream "/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top_hw_platform_0/download.bit"
+10:48:25 INFO  : Refreshed build settings on project fmcjesd
+10:48:25 INFO  : Refreshed build settings on project srec_spi_bootloader
+10:50:30 INFO  : 'targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0' command is executed.
+10:50:30 INFO  : 'fpga -state' command is executed.
+10:50:30 INFO  : Connected to target on host '10.211.3.140' and port '3121'.
+10:50:30 INFO  : Jtag cable 'Digilent JTAG-HS3 210299A17B27' is selected.
+10:50:30 INFO  : 'jtag frequency' command is executed.
+10:50:30 INFO  : 'configparams mdm-detect-bscan-mask 2' command is executed.
+10:50:30 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+10:50:30 INFO  : Processor reset is completed for 'sys_mb_microblaze_0'.
+10:50:30 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+10:50:30 INFO  : The application '/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/fmcjesd/Debug/fmcjesd.elf' is downloaded to processor 'sys_mb_microblaze_0'.
+10:50:30 INFO  : ----------------XSDB Script----------------
+connect -url tcp:10.211.3.140:3121
+configparams mdm-detect-bscan-mask 2
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+rst -processor
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+dow /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/fmcjesd/Debug/fmcjesd.elf
+----------------End of Script----------------
+
+10:53:42 INFO  : Disconnected from the channel tcfchan#2.
+11:16:55 INFO  : Registering command handlers for SDK TCF services
+11:16:56 INFO  : Launching XSCT server: xsct -n -interactive /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/temp_xsdb_launch_script.tcl
+11:16:58 INFO  : XSCT server has started successfully.
+11:16:58 INFO  : Successfully done setting XSCT server connection channel  
+11:16:58 INFO  : Successfully done setting SDK workspace  
+11:16:58 INFO  : Restoring local repository preferences: 
+		 /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/sw_lib
+11:16:58 INFO  : Processing command line option -lp /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/sw_lib.
+11:18:03 INFO  : Connected to target on host '127.0.0.1' and port '3121'.
+11:18:21 INFO  : ----------------XSDB Script----------------
+connect -url tcp:127.0.0.1:3121
+----------------End of Script----------------
+
+11:18:32 INFO  : Connected to target on host '10.211.3.140' and port '3121'.
+11:18:32 INFO  : Jtag cable 'Digilent JTAG-HS3 210299A17B27' is selected.
+11:18:32 INFO  : 'jtag frequency' command is executed.
+11:18:32 INFO  : 'targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0' command is executed.
+11:18:34 INFO  : FPGA configured successfully with bitstream "/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top_hw_platform_0/download.bit"
+11:18:34 INFO  : 'configparams mdm-detect-bscan-mask 2' command is executed.
+11:18:34 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:18:34 INFO  : Processor reset is completed for 'sys_mb_microblaze_0'.
+11:18:34 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:18:34 ERROR : Memory write error at 0x80000000. MicroBlaze instruction insert overrun
+11:18:34 INFO  : ----------------XSDB Script----------------
+connect -url tcp:10.211.3.140:3121
+targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0
+fpga -file /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/system_top_hw_platform_0/download.bit
+configparams mdm-detect-bscan-mask 2
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+rst -processor
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+dow /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/hello/Debug/hello.elf
+----------------End of Script----------------
+
+11:19:03 INFO  : Inferring section assignments and sizes from elf file: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/hello/Debug/hello.elf
+11:19:24 INFO  : 'targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0' command is executed.
+11:19:24 INFO  : 'fpga -state' command is executed.
+11:19:24 INFO  : Connected to target on host '10.211.3.140' and port '3121'.
+11:19:24 INFO  : Jtag cable 'Digilent JTAG-HS3 210299A17B27' is selected.
+11:19:24 INFO  : 'jtag frequency' command is executed.
+11:19:24 INFO  : 'configparams mdm-detect-bscan-mask 2' command is executed.
+11:19:24 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:19:24 INFO  : Processor reset is completed for 'sys_mb_microblaze_0'.
+11:19:24 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:19:24 INFO  : The application '/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/fmcjesd/Debug/fmcjesd.elf' is downloaded to processor 'sys_mb_microblaze_0'.
+11:19:24 INFO  : ----------------XSDB Script----------------
+connect -url tcp:10.211.3.140:3121
+configparams mdm-detect-bscan-mask 2
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+rst -processor
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+dow /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/fmcjesd/Debug/fmcjesd.elf
+----------------End of Script----------------
+
+11:19:29 INFO  : Disconnected from the channel tcfchan#2.
+11:19:44 INFO  : 'targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0' command is executed.
+11:19:44 INFO  : 'fpga -state' command is executed.
+11:19:44 INFO  : Connected to target on host '10.211.3.140' and port '3121'.
+11:19:44 INFO  : Jtag cable 'Digilent JTAG-HS3 210299A17B27' is selected.
+11:19:44 INFO  : 'jtag frequency' command is executed.
+11:19:44 INFO  : 'configparams mdm-detect-bscan-mask 2' command is executed.
+11:19:44 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:19:44 INFO  : Processor reset is completed for 'sys_mb_microblaze_0'.
+11:19:44 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:19:44 INFO  : The application '/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/hello/Debug/hello.elf' is downloaded to processor 'sys_mb_microblaze_0'.
+11:19:44 INFO  : ----------------XSDB Script----------------
+connect -url tcp:10.211.3.140:3121
+configparams mdm-detect-bscan-mask 2
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+rst -processor
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+dow /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/hello/Debug/hello.elf
+----------------End of Script----------------
+
+11:21:53 INFO  : Disconnected from the channel tcfchan#3.
+11:21:54 INFO  : 'targets -set -filter {jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27" && level==0} -index 0' command is executed.
+11:21:54 INFO  : 'fpga -state' command is executed.
+11:21:54 INFO  : Connected to target on host '10.211.3.140' and port '3121'.
+11:21:54 INFO  : Jtag cable 'Digilent JTAG-HS3 210299A17B27' is selected.
+11:21:54 INFO  : 'jtag frequency' command is executed.
+11:21:54 INFO  : 'configparams mdm-detect-bscan-mask 2' command is executed.
+11:21:54 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:21:54 INFO  : Processor reset is completed for 'sys_mb_microblaze_0'.
+11:21:54 INFO  : Context for processor 'sys_mb_microblaze_0' is selected.
+11:21:54 INFO  : The application '/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/fmcjesd/Debug/fmcjesd.elf' is downloaded to processor 'sys_mb_microblaze_0'.
+11:21:54 INFO  : ----------------XSDB Script----------------
+connect -url tcp:10.211.3.140:3121
+configparams mdm-detect-bscan-mask 2
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+rst -processor
+targets -set -nocase -filter {name =~ "microblaze*#0" && bscan=="USER2"  && jtag_cable_name =~ "Digilent JTAG-HS3 210299A17B27"} -index 0
+dow /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/fmcjesd/Debug/fmcjesd.elf
+----------------End of Script----------------
+
