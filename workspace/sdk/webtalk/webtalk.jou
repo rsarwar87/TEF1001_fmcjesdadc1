@@ -1,0 +1,12 @@
+#-----------------------------------------------------------
+# Webtalk v2019.1 (64-bit)
+# SW Build 2552052 on Fri May 24 14:47:09 MDT 2019
+# 
+# Start of session at: Fri Sep 13 09:45:53 2019
+# Process ID: 78671
+# Current directory: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/webtalk
+# Command line: wbtcv -mode batch -source sdk_webtalk.tcl
+# Log file: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/webtalk/webtalk.log
+# Journal file: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/sdk/webtalk/webtalk.jou
+#-----------------------------------------------------------
+source sdk_webtalk.tcl

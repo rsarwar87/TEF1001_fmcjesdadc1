@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item value="false" key="isRegEx"/>
+		<item value="" key="selection"/>
+		<item value="false" key="casesensitive"/>
+		<item value="false" key="incremental"/>
+		<item value="true" key="wrap"/>
+		<item value="false" key="wholeword"/>
+		<list key="findhistory">
+			<item value="XPAR_SPI_0"/>
+			<item value="XPAR_SPI_0_BASEADDR"/>
+			<item value="DEVICE_ID"/>
+			<item value="AXI_QUAD_SPI"/>
+			<item value="XPAR_AXI_QUAD_SPI_0_BASEADDR"/>
+			<item value="spi_write_and_read"/>
+			<item value="XSpi"/>
+			<item value="SPI_DEVICE_ID"/>
+		</list>
+		<list key="replacehistory">
+			<item value=""/>
+		</list>
+	</section>
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog_dialogBounds">
+		<item value="295" key="DIALOG_WIDTH"/>
+		<item value="1|Noto Sans|10.0|0|GTK|1|" key="DIALOG_FONT_NAME"/>
+		<item value="447" key="DIALOG_HEIGHT"/>
+		<item value="1458" key="DIALOG_X_ORIGIN"/>
+		<item value="250" key="DIALOG_Y_ORIGIN"/>
+	</section>
+</section>

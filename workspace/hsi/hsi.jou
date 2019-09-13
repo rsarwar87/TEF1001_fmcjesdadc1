@@ -1,0 +1,13 @@
+#-----------------------------------------------------------
+# hsi v2019.1 (64-bit)
+# SW Build 2552052 on Fri May 24 14:47:09 MDT 2019
+# 
+# Start of session at: Mon Jul 29 14:38:14 2019
+# Process ID: 109828
+# Current directory: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/hsi
+# Command line: hsi -source /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/scripts/script_hsi.tcl -tclargs --sw_list {{0 hello_tef1001 3 standalone NA NA NA NA NA NA NA NA} {2 srec_spi_bootloader 3 standalone NA NA NA NA NA NA NA NA} {5 hello_tef1001 FIRM standalone NA NA prebuilt/software/<short_dir>/hello_tef1001.srec 0x005E0000 NA NA NA NA}} --lib {/media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/sw_lib /media/2TB/workspace/rsarwar/work/device-tree-xlnx/} --vivrun -mode tcl
+# Log file: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/hsi/hsi.log
+# Journal file: /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/workspace/hsi/hsi.jou
+#-----------------------------------------------------------
+start_gui
+source /media/2TB/workspace/rsarwar/work/TE1001_160/refdesign/test_board/scripts/script_hsi.tcl
