@@ -106,7 +106,7 @@ module system_top (
     
 
   // instantiations
-  assing spi_csn_0 = spi_csn[0];
+  assign spi_csn_0 = spi_csn[0];
   fmcjesdadc1_spi i_fmcjesdadc1_spi (
     .spi_csn (spi_csn[0]),
     .spi_clk (spi_clk),
