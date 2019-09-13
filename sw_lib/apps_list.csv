@@ -50,6 +50,7 @@ CSV_VERSION=2.1
 2   ,srec_spi_bootloader,3        ,standalone ,NA         ,NA      ,NA                                             ,NA           ,NA             ,NA                                         ,NA           ,NA
 #3   ,u-boot             ,FIRM     ,petalinux  ,NA         ,NA      ,prebuilt/os/petalinux/<short_dir>/u-boot.srec  ,0x005E0000   ,NA             ,prebuilt/os/petalinux/<short_dir>/image.ub ,0x00900000   ,NA
 5    ,hello_tef1001     ,FIRM     ,standalone  ,NA         ,NA      ,prebuilt/software/<short_dir>/hello_tef1001.srec  ,0x005E0000   ,NA             ,NA ,NA   ,NA
+6    ,fmcjesd           ,FIRM     ,standalone  ,NA         ,NA      ,prebuilt/software/<short_dir>/fmcjesdadc.srec  ,0x005E0000   ,NA             ,NA ,NA   ,NA
 # #Example (remove # from matrix and replace app name, for new line increment id) 7 series zynq:
 # #0,1                   ,2        ,3          ,4          ,5           ,6             ,7            ,8      
 #id  ,appname             ,steps    ,OS-Name    ,UART      ,CFLAGS      ,data01_file   ,data01_load  ,data01_offset 
